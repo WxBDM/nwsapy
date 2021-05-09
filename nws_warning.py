@@ -15,8 +15,5 @@ class Warnings:
 class Tstorm(Warnings):
     pass
 
-class Flood(Warnings):
-    pass
-
 class Tornado(Warnings):
     pass
