@@ -2,13 +2,6 @@
 class Warnings:
 
     def __init__(self, json):
-        pass2
-
-
-    def _parse_description(self):
-        '''Parses the description of the JSON file.
-
-        '''
         pass
 
 
