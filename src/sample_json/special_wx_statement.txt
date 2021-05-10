@@ -1,0 +1,132 @@
+{
+        "@version": "1.1",
+        "wx": "https://api.weather.gov/ontology#",
+        "@vocab": "https://api.weather.gov/ontology#"
+    }
+],
+"type": "FeatureCollection",
+"features": [
+    {
+        "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.36a0e0c926bd1f73c086964a59b916851a4bbbf5.001.1",
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [
+                        -90.200000000000003,
+                        34.43
+                    ],
+                    [
+                        -90.200000000000003,
+                        34.549999999999997
+                    ],
+                    [
+                        -90.219999999999999,
+                        34.559999999999995
+                    ],
+                    [
+                        -89.769999999999996,
+                        34.769999999999996
+                    ],
+                    [
+                        -89.719999999999999,
+                        34.769999999999996
+                    ],
+                    [
+                        -89.719999999999999,
+                        34.799999999999997
+                    ],
+                    [
+                        -89.650000000000006,
+                        34.829999999999998
+                    ],
+                    [
+                        -89.510000000000005,
+                        34.579999999999998
+                    ],
+                    [
+                        -89.600000000000009,
+                        34.549999999999997
+                    ],
+                    [
+                        -89.720000000000013,
+                        34.549999999999997
+                    ],
+                    [
+                        -89.720000000000013,
+                        34.519999999999996
+                    ],
+                    [
+                        -90.170000000000016,
+                        34.379999999999995
+                    ],
+                    [
+                        -90.200000000000003,
+                        34.43
+                    ]
+                ]
+            ]
+        },
+        "properties": {
+            "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.36a0e0c926bd1f73c086964a59b916851a4bbbf5.001.1",
+            "@type": "wx:Alert",
+            "id": "urn:oid:2.49.0.1.840.0.36a0e0c926bd1f73c086964a59b916851a4bbbf5.001.1",
+            "areaDesc": "Marshall; Tate; Panola",
+            "geocode": {
+                "SAME": [
+                    "028093",
+                    "028137",
+                    "028107"
+                ],
+                "UGC": [
+                    "MSZ002",
+                    "MSZ008",
+                    "MSZ012"
+                ]
+            },
+            "affectedZones": [
+                "https://api.weather.gov/zones/forecast/MSZ002",
+                "https://api.weather.gov/zones/forecast/MSZ008",
+                "https://api.weather.gov/zones/forecast/MSZ012"
+            ],
+            "references": [],
+            "sent": "2021-05-09T09:48:00-05:00",
+            "effective": "2021-05-09T09:48:00-05:00",
+            "onset": "2021-05-09T09:48:00-05:00",
+            "expires": "2021-05-09T10:15:00-05:00",
+            "ends": null,
+            "status": "Actual",
+            "messageType": "Alert",
+            "category": "Met",
+            "severity": "Moderate",
+            "certainty": "Observed",
+            "urgency": "Expected",
+            "event": "Special Weather Statement",
+            "sender": "w-nws.webmaster@noaa.gov",
+            "senderName": "NWS Memphis TN",
+            "headline": "Special Weather Statement issued May 9 at 9:48AM CDT by NWS Memphis TN",
+            "description": "Southwestern Marshall County in northwestern Mississippi...\nNorthern Panola County in northwestern Mississippi...\nTate County in northwestern Mississippi...\n\nAt 947 AM CDT...a strong thunderstorm producing pea to dime size\nhail and winds 40 to 50 mph was located near Crenshaw, or 11 miles\nsouthwest of Senatobia, moving northeast at 55 mph.\n\nVery heavy rain along with continuous cloud to ground lightning are\nalso possible with this thunderstorm.\n\nPeople in southwestern Marshall...northern Panola and Tate Counties\nshould monitor this storm closely.",
+            "instruction": "",
+            "response": "Execute",
+            "parameters": {
+                "PIL": [
+                    "MEGSPSMEG"
+                ],
+                "NWSheadline": [
+                    "A SIGNIFICANT WEATHER ADVISORY HAS BEEN ISSUED UNTIL 1015 AM CDT FOR"
+                ],
+                "eventMotionDescription": [
+                    "2021-05-09T14:47:00-00:00...storm...245DEG...49KT...34.5,-90.13"
+                ],
+                "BLOCKCHANNEL": [
+                    "EAS",
+                    "NWEM",
+                    "CMAS"
+                ],
+                "EAS-ORG": [
+                    "WXR"
+                ]
+            }
+        }
+    }

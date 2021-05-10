@@ -1,0 +1,98 @@
+{
+    "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.8485a2e90cee5c31e04d71b5e75c8a02934315d7.001.1",
+    "type": "Feature",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    -79.680000000000007,
+                    25.460000000000001
+                ],
+                [
+                    -80.370000000000005,
+                    25.560000000000002
+                ],
+                [
+                    -80.280000000000001,
+                    25.770000000000003
+                ],
+                [
+                    -80.25,
+                    25.780000000000005
+                ],
+                [
+                    -80.239999999999995,
+                    25.850000000000005
+                ],
+                [
+                    -80.219999999999999,
+                    25.900000000000006
+                ],
+                [
+                    -79.609999999999999,
+                    25.750000000000007
+                ],
+                [
+                    -79.680000000000007,
+                    25.460000000000001
+                ]
+            ]
+        ]
+    },
+    "properties": {
+        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.8485a2e90cee5c31e04d71b5e75c8a02934315d7.001.1",
+        "@type": "wx:Alert",
+        "id": "urn:oid:2.49.0.1.840.0.8485a2e90cee5c31e04d71b5e75c8a02934315d7.001.1",
+        "areaDesc": "Biscayne Bay; Coastal waters from Deerfield Beach to Ocean Reef FL out 20 NM; Waters from Deerfield Beach to Ocean Reef FL from 20 to 60 NM excluding the territorial waters of Bahamas",
+        "geocode": {
+            "SAME": [
+                "075630",
+                "075651",
+                "075671"
+            ],
+            "UGC": [
+                "AMZ630",
+                "AMZ651",
+                "AMZ671"
+            ]
+        },
+        "affectedZones": [
+            "https://api.weather.gov/zones/forecast/AMZ630",
+            "https://api.weather.gov/zones/forecast/AMZ651",
+            "https://api.weather.gov/zones/forecast/AMZ671"
+        ],
+        "references": [],
+        "sent": "2021-05-09T10:32:00-04:00",
+        "effective": "2021-05-09T10:32:00-04:00",
+        "onset": "2021-05-09T10:32:00-04:00",
+        "expires": "2021-05-09T12:00:00-04:00",
+        "ends": null,
+        "status": "Actual",
+        "messageType": "Alert",
+        "category": "Met",
+        "severity": "Minor",
+        "certainty": "Observed",
+        "urgency": "Expected",
+        "event": "Marine Weather Statement",
+        "sender": "w-nws.webmaster@noaa.gov",
+        "senderName": "NWS Miami FL",
+        "headline": "Marine Weather Statement issued May 9 at 10:32AM EDT by NWS Miami FL",
+        "description": "The areas affected include...\nBiscayne Bay...\nCoastal waters from Deerfield Beach to Ocean Reef FL out 20 NM...\nWaters from Deerfield Beach to Ocean Reef FL from 20 to 60 NM\nexcluding the territorial waters of Bahamas...\n\nAt 1031 AM EDT, Doppler radar indicated a strong thunderstorm,\ncapable of producing winds to around 30 knots. This thunderstorm was\nlocated 11 nm east of Cape Florida, moving west at 10 knots.",
+        "instruction": "Mariners can expect gusty winds to around 30 knots and locally higher\nwaves. Boaters should seek safe harbor immediately until this storm\npasses.\n\nWaterspouts are possible with this activity. Remain on the alert in\ncase warnings are issued for waterspout development.",
+        "response": "Monitor",
+        "parameters": {
+            "PIL": [
+                "MFLMWSMFL"
+            ],
+            "NWSheadline": [
+                "A STRONG THUNDERSTORM OVER THE WATERS"
+            ],
+            "BLOCKCHANNEL": [
+                "EAS",
+                "NWEM",
+                "CMAS"
+            ]
+        }
+    }
+}
