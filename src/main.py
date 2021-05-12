@@ -2,7 +2,17 @@
 # Sample script of the UI that the user would have.
 
 import nwsapi
-import pprint
 
-alert_by_id = nwsapi.get_alert_by_id("urn:oid:2.49.0.1.840.0.120d2da9a18007cad5170aeb93acff3abf04d935.001.1")
-print(alert_by_id)
+active_alerts = nwsapi.get_active_alerts()
+all_flood_warnings = active_alerts.filter_by("Flood Warning")
+
+
+
+
+
+# alert_type = 'Flood Warning'
+# # number_of_flood_warnings = active_alerts.get_number_of(321321)  # get the number of flood warnings
+# flood_warnings = active_alerts.filter_by(alert_type)  # get the list of just the flood warnings
+# flood_warning_first = flood_warnings[0]
+#
+# print(flood_warning_first.polygon)
