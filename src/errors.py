@@ -27,6 +27,6 @@ class DataValidationError(ErrorBase):
     message -- explanation of the error
     """
 
-    def __init__(self, incorrect_data):
-        self.message = f"Invalid data input: '{incorrect_data}'. See documentation for valid inputs."
+    def __init__(self, incorrect_data, more_info = ""):
+        self.message = f"Invalid data input: '{incorrect_data}'. See documentation for valid inputs.\n{more_info}"
         super().__init__(self.message)

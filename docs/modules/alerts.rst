@@ -83,27 +83,27 @@ Each alert property is stored as an attribute. So, for example, let's say that w
 
 This specific alert would have the following attributes from the ``properties`` portion:
 
-	| ``.id``
-	| ``.areaDesc``
-	| ``.effective``
-	| ``.expires``
-	| ``.status``
-	| ``.messageType``
-	| ``.severity``
-	| ``.event``
-	| ``.senderName``
-	| ``.headline``
-	| ``.description``
+	| ``.id`` (str)
+	| ``.areaDesc`` (str)
+	| ``.effective`` (datetime.datetime)
+	| ``.expires`` (datetime.datetime)
+	| ``.status`` (datetime.datetime)
+	| ``.messageType`` (str)
+	| ``.severity`` (str)
+	| ``.event`` (str)
+	| ``.senderName`` (str)
+	| ``.headline`` (str)
+	| ``.description`` (str)
 	
 When it comes to geometry (found in the ``geometry`` portion), things are handled slightly differently. That is, the coordinates are converted into shapely polygons and points. So, the attributes from this would be:
 
-	| ``.polygon``
-	| ``.points``
-	| ``.point_collection``
+	| ``.polygon`` (shapely.Polygon)
+	| ``.points`` (list of shapely.Point)
+	| ``.point_collection`` (shapely.Multipoint)
 
-Note that if there is no geometry associated with the alert, these attributes will not be added.
+Note that if there is no geometry associated with the alert, these attributes will be set to ``None``.
 
-Individual objects will vary depending upon the type of object and which method it's being called from, as the National Weather Service API is structured slightly differently. For now, to see what attributes the alert object has is to call ``dir()`` on it.
+Individual objects will vary depending upon the type of object and which method it's being called from. Until this can be fully documented, to see what attributes the alert object has is to call ``dir()`` on it. Unless otherwise pointed out from above, you can assume that the attributes are strings.
 
 Examples
 ^^^^^^^^

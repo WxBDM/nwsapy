@@ -19,6 +19,7 @@ from typing import Union
 import collections
 
 from shapely.geometry import Point, Polygon, MultiPoint
+from datetime import datetime
 import requests
 
 from errors import ParameterTypeError, DataValidationError
@@ -50,6 +51,19 @@ class _Alert:
 
         # properties is a nested dictionary. Need to create a new dictionary and then update it with logic from above.
         full_d = alert_list['properties']
+
+        # convert times to a date time object.
+        if not isinstance(full_d['sent'], type(None)):
+            full_d['sent'] = datetime.fromisoformat(full_d['sent'])
+        if not isinstance(full_d['effective'], type(None)):
+            full_d['effective'] = datetime.fromisoformat(full_d['effective'])
+        if not isinstance(full_d['onset'], type(None)):
+            full_d['onset'] = datetime.fromisoformat(full_d['onset'])
+        if not isinstance(full_d['expires'], type(None)):
+            full_d['expires'] = datetime.fromisoformat(full_d['expires'])
+        if not isinstance(full_d['ends'], type(None)):
+            full_d['ends'] = datetime.fromisoformat(full_d['ends'])
+
         full_d.update(polygon_d)
 
         # this will be the object that's created based on the event.
@@ -218,11 +232,11 @@ class AlertById(_Alert):
 
         self._validate_parameter(alert_id)
         if isinstance(alert_id, str):
-            alert_id = [alert_id]  # this is only to make it consistent and easier to read code.
+            alert_id = [alert_id]  # this is only to make it consistent with logic below.
 
         for a_id in alert_id:
             response = utils.request(f"https://api.weather.gov/alerts/{a_id}")
-            if not isinstance(response, requests.Response):
+            if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
                 continue
 
@@ -280,9 +294,103 @@ class AlertById(_Alert):
 
 @dataclass
 class AlertByMarineRegion(_Alert):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/regions/{region}``
 
-    """Not yet implemented."""
-    pass
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
+
+        A small craft advisory alert would be a smallcraftadvisory object.
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    counter : collections.Counter
+        A collection of the number of alerts there are based upon the event type.
+
+    """
+
+    # AL => Alaska
+    # AT => Atlantic Marine
+    # GL => Great Lakes
+    # GM => Gulf of Mexico
+    # PA => Pacific Marine
+    # PI => Pacific Islands
+
+    def __init__(self, region):
+
+        if not isinstance(region, str):  # if it's not string, list, or tuple
+            raise ParameterTypeError(region, 'string')
+
+        if region.upper() not in ['AL', 'AT', 'GL', 'GM', 'PA', 'PI']:
+            raise DataValidationError(region)
+
+        response = utils.request(f"https://api.weather.gov/alerts/active/regions/{region}")
+        info = response.json()['features']
+        self.alerts = [self._sort_geometry(x) for x in info]  # opted for list comp because it's faster
+        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
+
+    def get_number_of(self, alert_type: str) -> int:
+        r"""A method to give you the number of alerts of a specific type that are active.
+
+        Parameters
+        ----------
+        alert_type : str
+            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+
+        Raises
+        ------
+        nwsapi.ParameterTypeError
+            If the parameter isn't the correct data type (string).
+        nwsapi.DataValidationError
+            If the alert type isn't a valid National Weather Service alert.
+
+        Returns
+        -------
+        int
+            The number of alerts that are of the alert type.
+
+        Examples
+        --------
+        >>> active_alerts = nwsapi.get_alert_count()
+        >>> active_alerts.get_alert_count('Flood Warning')
+        35
+        """
+        self._validate_alert_type(alert_type)  # validate data
+
+        # valid data type, valid product. Get it from counter. (O(1))
+        if alert_type not in self.counter:
+            return 0
+        else:
+            return self.counter[alert_type]
+
+    def filter_by(self, alert_type):
+        r"""Filters all active alerts based upon the alert type.
+
+        Parameters
+        ----------
+        alert_type : str
+            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+
+        Returns
+        -------
+        list
+            A collection of the filtered alert objects based upon the parameter. Will return an empty list if there
+            are no alerts based off of the filter type.
+
+        Example
+        -------
+        >>> active_alerts = nwsapy.get_active_alerts()
+        >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
+        [<alerts.floodwarning object at 0x7fcf55199d00>,
+            <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
+        """
+        # validate the data
+        self._validate_alert_type(alert_type)
+
+        # filter the alerts
+        filtered_alerts = [alert for alert in self.alerts if alert.event == alert_type]
+        return filtered_alerts
 
 
 @dataclass
@@ -294,8 +402,24 @@ class AlertByArea(_Alert):
 
 @dataclass
 class AlertByCount(_Alert):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/count``
 
-    """Not yet implemented."""
+    Attributes
+    ----------
+    total : int
+        The total number of alerts
+    land : int
+        The total number of alerts over land
+    marine : int
+        The total number of alerts over water
+    regions : dict
+        Specifies the number of marine alerts in a certain location (keys: regions, values: int)
+    areas : dict
+        Specifies the number of land alerts in a certain location (keys: areas, values: int)
+    zones : dict
+        Specifies the number of alerts per zone (keys: zone, values: int)
+
+    """
 
     def __init__(self):
         url = "https://api.weather.gov/alerts/active/count"
@@ -308,3 +432,71 @@ class AlertByCount(_Alert):
         self.regions = info['regions']  # dtype: dict {str : int}
         self.areas = info['areas']  # dtype: dict {str : int}
         self.zones = info['zones']  # dtype: dict {str : int}
+
+    def _filter_by(self, region_area_or_zone, filter, docs_str): # private method, used to refactor filter_x methods.
+        """Used to refactor filter_x methods. Much cleaner this way."""
+
+        valid = (isinstance(filter, str), isinstance(filter, list), isinstance(filter, tuple))
+        if not valid:
+            raise ParameterTypeError(filter, "string, list tuple")
+
+        if isinstance(filter, str):
+            filter = [filter]  # make it a list to be consistent with logic (eliminates unnecessary if/else)
+
+        filtered_d = {}
+        for filter_item in filter: # iterate through user inputs
+            filter_item = filter_item.upper()
+            if filter_item not in region_area_or_zone.keys(): # ensure that it's in the keys (see __init__)
+                raise DataValidationError(filter_item, docs_str)
+            filtered_d[filter_item] = region_area_or_zone[filter_item]
+
+        return filtered_d
+
+    def filter_marine_regions(self, region: Union[str, list, tuple]) -> list:
+        r"""Filters all active alerts based upon the marine region.
+
+        Parameters
+        ----------
+        region : str, list, or tuple
+            The marine region that you want to filter by. See documentation for valid inputs.
+
+        Returns
+        -------
+        dict
+            Dictionary with key:value pairs being region:count.
+
+        """
+        return self._filter_by(self.regions, region, "Documentation link goes here.")
+
+
+    def filter_land_areas(self, area: Union[str, list, tuple]) -> list:
+        r"""Filters all active alerts based upon the land area.
+
+        Parameters
+        ----------
+        area : str, list, or tuple
+            The land area that you want to filter by. See documentation for valid inputs.
+
+        Returns
+        -------
+        dict
+            Dictionary with key:value pairs being area:count.
+
+        """
+        return self._filter_by(self.areas, area, "Documentation link goes here.")
+
+    def filter_zones(self, zone: Union[str, list, tuple]) -> list:
+        r"""Filters all active alerts based upon the marine region.
+
+        Parameters
+        ----------
+        zone : str, list, or tuple
+            The zone ID that you want to filter by. See documentation for valid inputs.
+
+        Returns
+        -------
+        dict
+            Dictionary with key:value pairs being zone:count.
+
+        """
+        return self._filter_by(self.zones, zone, "Documentation link goes here.")
