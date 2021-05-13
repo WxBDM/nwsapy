@@ -1,18 +1,21 @@
-import alerts
-import utils
-from errors import ParameterTypeError, DataValidationError
+"""These methods are to be called to obtain objects pertaining to the modules.
 
-# General structure:
-#   If there's any parameters, perform data validation. Raise a Parameter error if there's an issue with it.
-#   Check validation. Is it of proper format (i.e. 2 letters, inside of a list, etc).
+With how this API is designed, you should be using these functions to access all of the modules (i.e. Alerts,
+Radar, Products, etc).
+
+"""
+from errors import ParameterTypeError, DataValidationError
+from typing import Union
+import alerts
 
 
 def get_active_alerts():
-    """Fetches all active alerts.
+    """Fetches all active alerts from `/alerts/active`
 
     Returns
     -------
-        Alerts => An object containing information about the current alerts.
+    alerts.ActiveAlerts
+        An object that contains the information of the current alerts.
     """
 
     # No parameter data validation checks needed, instantiate object and return it.
@@ -20,7 +23,7 @@ def get_active_alerts():
 
 
 def get_alert_by_id(alert_id):
-    """Fetches an alert by the ID.
+    """Fetches an alert by the ID from `/alerts/{id}`
 
     Parameters
     ----------
@@ -32,6 +35,7 @@ def get_alert_by_id(alert_id):
     Returns
     -------
     alerts.AlertById
+        An object containing information of all of the alerts.
     """
 
     # ensure it's a string.
@@ -41,21 +45,8 @@ def get_alert_by_id(alert_id):
     return alerts.AlertById(alert_id)
 
 
-def get_alert_by_marine_region(marine_region_string):
-    """Fetches alerts by a marine region.
-
-    Parameters
-    ==========
-        ID (int, list/tuple): An ID cooresponding to an alert.
-            If ID is a list, it will iterate through all of the ID's and give you an object containing all of the alerts
-            associated with the ID.
-
-    Returns
-    =======
-        If successful:
-            Alerts: an object containing information about the associated alert(s).
-        If unsuccessful:
-            Error: an object containing information about what went wrong."""
+def get_alert_by_marine_region(marine_region_string: Union[str, list]):
+    """Not yet implemented."""
 
     # ensure that the parameter is a string.
     if not isinstance(marine_region_string, str):
@@ -68,22 +59,7 @@ def get_alert_by_marine_region(marine_region_string):
 
 
 def get_alert_by_area(area):
-    """Fetch an alert by an area.
-
-    Parameter
-    =========
-        area (str): 2 letter area that is one of the valid areas.
-        Valid areas:
-            'AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL', 'IN', 'IA',
-            'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC',
-            'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VI', 'VA', 'WA', 'WV', 'WI',
-            'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS', 'LM', 'LH', 'LC', 'LE', 'LO'
-
-    Returns
-    =======
-
-    """
-
+    """Not implemented."""
     if not isinstance(area, str): # check data type
         raise ParameterTypeError(area, str)
 
@@ -98,7 +74,14 @@ def get_alert_by_area(area):
         raise ValueError(f"Parameter must be in valid codes. See documentation for valid codes. Value: {area}")
 
 
-def get_total_alert_count():
+def get_alert_count():
+    """Fetches and organizes a count from `/alerts/active/count`
 
+    Returns
+    -------
+    alerts.AlertByCount
+        An object that contains the information of the alert count.
+
+    """
     # No parameters, create object and return it.
     return alerts.AlertByCount()

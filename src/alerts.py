@@ -2,18 +2,20 @@
 This is the alerts module for wrapping the alerts portion in the API.
 
 Specifically, this module holds classes for the following urls:
-    `/alerts`
-    `/alerts/active`
-    `/alerts/types`
-    `/alerts/{id}`
-    `/alerts/active/count`
-    `/alerts/active/zone/{zoneId}`
-    `/alerts/active/area/{area}`
-    `/alerts/active/region/{region}`
+    ``/alerts``\n
+    ``/alerts/active``\n
+    ``/alerts/types``\n
+    ``/alerts/{id}``\n
+    ``/alerts/active/count``\n
+    ``/alerts/active/zone/{zoneId}``\n
+    ``/alerts/active/area/{area}``\n
+    ``/alerts/active/region/{region}``\n
 
 You can find the API documentation here: https://www.weather.gov/documentation/services-web-api#/
 """
 from dataclasses import dataclass
+from types import MethodType
+from typing import Union
 import collections
 
 from shapely.geometry import Point, Polygon, MultiPoint
@@ -24,7 +26,7 @@ import utils
 
 
 @dataclass
-class Alert:
+class _Alert:
     # Base class for alerts sub classes.
 
     @staticmethod
@@ -52,42 +54,46 @@ class Alert:
 
         # this will be the object that's created based on the event.
         #    for example, if it was a tornado warning, the object would be "tornadowarning"
+
+        def str_obj_info(self):
+            info = [f"{attribute} : {full_d[attribute]}" for attribute in full_d]
+            return "\n".join(info)
+
         alert = type(full_d['event'].replace(" ", "").lower(), (), full_d)
+        alert.peek_at_info = MethodType(str_obj_info, alert)
         return alert()  # this instantiates the object. Don't change this!
 
     @staticmethod
-    def _validate_alert_type(alert_type: str):
+    def _validate_alert_type(alert_type: Union[str, list]):
 
         # checks to make sure that the data type is correct and is validated against the various alert types.
 
         # data checking.
-        if not isinstance(alert_type, str):
-            raise ParameterTypeError(alert_type, str)
+        invalid = (isinstance(alert_type, str), isinstance(alert_type, list), isinstance(alert_type, tuple))
+        if not any(invalid): # if it's not string, list, or tuple
+            raise ParameterTypeError(alert_type, 'string, list, or tuple')
+
+        if isinstance(alert_type, str):
+            alert_type = [alert_type]
 
         # make sure it's a valid product. If so, then we're okay to check inside of the collections.
-        alert_type = alert_type.title()
         valid_product_link = "https://api.weather.gov/alerts/types"
         response = utils.request(valid_product_link)
         event_types = response.json()['eventTypes']
-        if alert_type not in event_types:
-            raise DataValidationError(alert_type)
+        for alert in alert_type:
+            alert = alert.title()
+            if alert not in event_types:
+                raise DataValidationError(alert)
 
 
 @dataclass
-class ActiveAlerts(Alert):
-    r"""A class used to hold information about all active alerts.
+class ActiveAlerts(_Alert):
+    r"""A class used to hold information about all active alerts found from ``alerts/active``
 
-    Each alert is it's own object type that is stored in a list (self.alerts). That is:
-        > a tornado warning alert would be a tornadowarning object.
-        > A small craft advisory alert would be a smallcraftadvisory object.
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
 
-    Note
-    ----
-    There is minimal handling of requests. Error handling can be found in the utilities folder
-
-    See Also
-    --------
-    utils.request() : handling of request errors
+        A small craft advisory alert would be a smallcraftadvisory object.
 
     Attributes
     ----------
@@ -95,13 +101,6 @@ class ActiveAlerts(Alert):
         A list containing data types corresponding to the alert.
     counter : collections.Counter
         A collection of the number of alerts there are based upon the event type.
-
-    Methods
-    -------
-    get_number_of(alert_type: str) -> int
-        Returns the number of alerts of this alert type.
-    filter_by(alert_type: str) -> list
-        Filters all of the alerts based off of the given alert type.
 
     """
 
@@ -154,13 +153,14 @@ class ActiveAlerts(Alert):
         else:
             return self.counter[alert_type]
 
-    def filter_by(self, alert_type: str) -> list:
+    def filter_by(self, alert_type: Union[str, list]) -> list:
         r"""Filters all active alerts based upon the alert type.
 
         Parameters
         ----------
-        alert_type : str
-            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+        alert_type : str, list
+            The type of alert to be searched. Not case sensitive.
+            Examples: "Tornado Warning", ["flood watch", "SmAlL CrAfT wArNiNg"]
 
         Raises
         ------
@@ -176,18 +176,41 @@ class ActiveAlerts(Alert):
 
         Examples
         --------
-        >>> active_alerts = nwsapi.get_active_alerts()
+        Suppose you wanted to get all flood warnings:
+
+        >>> active_alerts = nwsapy.get_active_alerts()
         >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
-        [<alerts.floodwarning object at 0x7fcf55199d00>, <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
+        [<alerts.floodwarning object at 0x7fcf55199d00>,
+        <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
+
+        Suppose you wanted to get all air quality alerts and special weather statements:
+
+        >>> active_alerts = nwsapy.get_active_alerts()
+        >>> all_flood_warnings = active_alerts.filter_by(["Air QUALITY alert", "Special Weather stAteMenT"])
+        [<alerts.airqualityalert object at 0x7fc1c9169640>, ...,
+        <alerts.specialweatherstatement object at 0x7fc1c916d610>, ...]
+
         """
         self._validate_alert_type(alert_type)  # validate data
 
-        filtered_alerts = [alert for alert in self.alerts if alert.event == alert_type]
+        if isinstance(alert_type, str):
+            alert_type = [alert_type] # keep it consistent with the logic and just make it into a list.
+
+        # Equivalent list comp logic:
+        # filtered_alerts = []
+        # for alert in self.alerts:
+        #     for type_of_alert in alert_type:
+        #         if type_of_alert == alert.event:
+        #             filtered_alerts.append(alert)
+
+        filtered_alerts = [alert for type_of_alert in alert_type for alert in self.alerts
+                           if type_of_alert.title() == alert.event]
+
         return filtered_alerts
 
 
 @dataclass
-class AlertById(Alert):
+class AlertById(_Alert):
 
     def __init__(self, alert_id):
 
@@ -221,7 +244,32 @@ class AlertById(Alert):
             raise ValueError(f"alert_id should be a string. Got: {type(alert_id)}")
 
     def filter_by(self, alert_type):
+        r"""Filters all active alerts based upon the alert type.
 
+        Parameters
+        ----------
+        alert_type : str
+            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+
+        Raises
+        ------
+        nwsapi.ParameterTypeError
+            If the parameter isn't the correct data type (string).
+        nwsapi.DataValidationError
+            If the alert type isn't a valid National Weather Service alert.
+
+        Returns
+        -------
+        list
+            A collection of the filtered alert objects based upon the parameter.
+
+        Example
+        -------
+        >>> active_alerts = nwsapy.get_active_alerts()
+        >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
+        [<alerts.floodwarning object at 0x7fcf55199d00>,
+            <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
+        """
         # validate the data
         self._validate_alert_type(alert_type)
 
@@ -231,7 +279,23 @@ class AlertById(Alert):
 
 
 @dataclass
-class AlertByCount(Alert):
+class AlertByMarineRegion(_Alert):
+
+    """Not yet implemented."""
+    pass
+
+
+@dataclass
+class AlertByArea(_Alert):
+
+    """Not yet implemented."""
+    pass
+
+
+@dataclass
+class AlertByCount(_Alert):
+
+    """Not yet implemented."""
 
     def __init__(self):
         url = "https://api.weather.gov/alerts/active/count"
