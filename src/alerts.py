@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from types import MethodType
 from typing import Union
 import collections
+import pprint
 
 from shapely.geometry import Point, Polygon, MultiPoint
 from datetime import datetime
@@ -26,63 +27,83 @@ from errors import ParameterTypeError, DataValidationError
 import utils
 
 
-@dataclass
-class _Alert:
-    # Base class for alerts sub classes.
+class _AlertConstructor:
+    """Alert constructor should construct the individual alert object. Note that this is all dynamic."""
 
-    @staticmethod
-    def _sort_geometry(alert_list):
+    def _construct_alert(self, alert_list):
+        alert_dictionary = alert_list['properties']
+        if not isinstance(alert_list['geometry'], type(None)):
+            alert_dictionary.update({'geometry' : alert_list['geometry']})
+            self._construct_geometry(alert_dictionary)  # even though the dict is being updated, it returns nothing.
+        else: # there's no geometry tag, so make them none.
+            no_geometry = dict({"points": None, 'polygon': None, "points_collection": None})  # set to none
+            alert_dictionary.update(no_geometry)
+
+        self._construct_times(alert_dictionary)
+        constructed_alert = self._construct_methods(alert_dictionary)
+        return constructed_alert()
+
+    def _construct_methods(self, alert_dictionary):
+        """Constructs the object and returns it."""
+
+        # these methods are ones that are going to be bound to the object. This is documented
+        def repr(self): return "\n".join([f"{attr} : {alert_dictionary[attr]}" for attr in alert_dictionary])
+        def string(self): return f"{alert_dictionary['event']} object"
+        def sent_before(self, other): return self.sent > other.sent
+        def sent_after(self, other): return self.sent < other.sent
+        def effective_before(self, other): return self.effective > other.effective
+        def effective_after(self, other): return self.effective < other.effective
+        def onset_before(self, other): return self.onset > other.onset
+        def onset_after(self, other): return self.onset < other.onset
+        def expires_before(self, other): return self.expires > other.expires
+        def expires_after(self, other): return self.expires < other.expires
+
+        # Create the object and bind the method to it.
+        alert = type(alert_dictionary['event'].replace(" ", "").lower(), (), alert_dictionary)
+        alert.__repr__ = MethodType(repr, alert)
+        alert.__str__ = MethodType(string, alert)
+        alert.sent_before = MethodType(sent_before, alert)
+        alert.sent_after = MethodType(sent_after, alert)
+        alert.effective_before = MethodType(effective_before, alert)
+        alert.effective_after = MethodType(effective_after, alert)
+        alert.onset_before = MethodType(onset_before, alert)
+        alert.onset_after = MethodType(onset_after, alert)
+        alert.expires_before = MethodType(expires_before, alert)
+        alert.expires_after = MethodType(expires_after, alert)
+
+        return alert # we're not instantiating the object here. It's in the main construct method.
+
+    def _construct_geometry(self, alert_dictionary):
+
+        """Construct alert.polygon, alert.points, and alert.multipoint"""
         # determine the geometry kind. If it's a point, make a list of shapely point objects, and create a multipoint
         # object.
-        if isinstance(alert_list['geometry'], type(None)):  # if there's no geometry (i.e. 'geometry' : null)
-            polygon_d = dict(points=None, polygon=None, points_collection=None)  # set to none. This is to remain to consistent
-        else:
-            # If there is a geometry, then make points and points collection at a minimum.
-            geometry_type = alert_list['geometry']['type']
-            points = [Point(x[0], x[1]) for x in alert_list['geometry']['coordinates'][0]]
-            points_collection = MultiPoint(points)
-            polygon_d = dict({'points': points, 'points_collection': points_collection})
 
-            # If the geometry type is a polygon, make a polygon object as well. Otherwise set to none.
-            if geometry_type == 'Polygon':
-                polygon_d['polygon'] = Polygon(points)
-            else:
-                polygon_d['polygon'] = None
+        # If there is a geometry, then make points and points collection at a minimum.
+        geometry_type = alert_dictionary['geometry']['type']
+        points = [Point(x[0], x[1]) for x in alert_dictionary['geometry']['coordinates'][0]]
+        polygon_d = dict({'points' : points, 'points_collection': MultiPoint(points)})
 
-        # properties is a nested dictionary. Need to create a new dictionary and then update it with logic from above.
-        full_d = alert_list['properties']
+        # If the geometry type is a polygon, make a polygon object as well. Otherwise set to none.
+        if geometry_type == 'Polygon':
+            polygon_d['polygon'] = Polygon(points)
+        else: # only if it's a point (just in case, this needs to be tested)
+            polygon_d['polygon'] = None
 
+        alert_dictionary.update(polygon_d)
+
+    def _construct_times(self, alert_dictionary):
         # convert times to a date time object.
-        if not isinstance(full_d['sent'], type(None)):
-            full_d['sent'] = datetime.fromisoformat(full_d['sent'])
-        if not isinstance(full_d['effective'], type(None)):
-            full_d['effective'] = datetime.fromisoformat(full_d['effective'])
-        if not isinstance(full_d['onset'], type(None)):
-            full_d['onset'] = datetime.fromisoformat(full_d['onset'])
-        if not isinstance(full_d['expires'], type(None)):
-            full_d['expires'] = datetime.fromisoformat(full_d['expires'])
-        if not isinstance(full_d['ends'], type(None)):
-            full_d['ends'] = datetime.fromisoformat(full_d['ends'])
-
-        full_d.update(polygon_d)
-
-        # this will be the object that's created based on the event.
-        #    for example, if it was a tornado warning, the object would be "tornadowarning"
-
-        def str_obj_info(self):
-            info = [f"{attribute} : {full_d[attribute]}" for attribute in full_d]
-            return "\n".join(info)
-
-        alert = type(full_d['event'].replace(" ", "").lower(), (), full_d)
-        alert.peek_at_info = MethodType(str_obj_info, alert)
-        return alert()  # this instantiates the object. Don't change this!
+        all_times = ['sent', 'effective', 'onset', 'expires', 'ends']
+        for time in all_times:
+            if not isinstance(alert_dictionary[time], type(None)):
+                alert_dictionary[time] = datetime.fromisoformat(alert_dictionary[time])
 
     @staticmethod
     def _validate_alert_type(alert_type: Union[str, list]):
 
         # checks to make sure that the data type is correct and is validated against the various alert types.
 
-        # data checking.
         invalid = (isinstance(alert_type, str), isinstance(alert_type, list), isinstance(alert_type, tuple))
         if not any(invalid): # if it's not string, list, or tuple
             raise ParameterTypeError(alert_type, 'string, list, or tuple')
@@ -98,74 +119,6 @@ class _Alert:
             alert = alert.title()
             if alert not in event_types:
                 raise DataValidationError(alert)
-
-
-@dataclass
-class ActiveAlerts(_Alert):
-    r"""A class used to hold information about all active alerts found from ``alerts/active``
-
-    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
-        A tornado warning alert would be a tornadowarning object.
-
-        A small craft advisory alert would be a smallcraftadvisory object.
-
-    Attributes
-    ----------
-    alerts : list
-        A list containing data types corresponding to the alert.
-    counter : collections.Counter
-        A collection of the number of alerts there are based upon the event type.
-
-    """
-
-    def __init__(self):
-        """Instantiate the ActiveAlerts object.
-
-        This sends a request to /alerts/active, then stores all of the alerts based off of it's type in a list.
-        There is also an attribute to count the number of alerts (collections.Counter).
-
-        Note
-        ----
-        As of release, there is no way to handle bad requests from the server. It will likely result in a KeyError.
-        """
-        response = utils.request("https://api.weather.gov/alerts/active")
-        info = response.json()['features']
-        self.alerts = [self._sort_geometry(x) for x in info]  # opted for list comp because it's faster
-        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-
-    def get_number_of(self, alert_type: str) -> int:
-        r"""A method to give you the number of alerts of a specific type that are active.
-
-        Parameters
-        ----------
-        alert_type : str
-            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
-
-        Raises
-        ------
-        nwsapi.ParameterTypeError
-            If the parameter isn't the correct data type (string).
-        nwsapi.DataValidationError
-            If the alert type isn't a valid National Weather Service alert.
-
-        Returns
-        -------
-        int
-            The number of alerts that are of the alert type.
-
-        Examples
-        --------
-        >>> active_alerts = nwsapi.get_alert_count()
-        >>> active_alerts.get_alert_count('Flood Warning')
-        35
-        """
-        self._validate_alert_type(alert_type) # validate data
-
-        # valid data type, valid product. Get it from counter. (O(1))
-        if alert_type not in self.counter:
-            return 0
-        else:
-            return self.counter[alert_type]
 
     def filter_by(self, alert_type: Union[str, list]) -> list:
         r"""Filters all active alerts based upon the alert type.
@@ -188,27 +141,11 @@ class ActiveAlerts(_Alert):
         list
             A collection of the filtered alert objects based upon the parameter.
 
-        Examples
-        --------
-        Suppose you wanted to get all flood warnings:
-
-        >>> active_alerts = nwsapy.get_active_alerts()
-        >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
-        [<alerts.floodwarning object at 0x7fcf55199d00>,
-        <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
-
-        Suppose you wanted to get all air quality alerts and special weather statements:
-
-        >>> active_alerts = nwsapy.get_active_alerts()
-        >>> all_flood_warnings = active_alerts.filter_by(["Air QUALITY alert", "Special Weather stAteMenT"])
-        [<alerts.airqualityalert object at 0x7fc1c9169640>, ...,
-        <alerts.specialweatherstatement object at 0x7fc1c916d610>, ...]
-
         """
         self._validate_alert_type(alert_type)  # validate data
 
         if isinstance(alert_type, str):
-            alert_type = [alert_type] # keep it consistent with the logic and just make it into a list.
+            alert_type = [alert_type]  # keep it consistent with the logic and just make it into a list.
 
         # Equivalent list comp logic:
         # filtered_alerts = []
@@ -222,48 +159,16 @@ class ActiveAlerts(_Alert):
 
         return filtered_alerts
 
-
-@dataclass
-class AlertById(_Alert):
-
-    def __init__(self, alert_id):
-
-        self.alerts = []
-
-        self._validate_parameter(alert_id)
-        if isinstance(alert_id, str):
-            alert_id = [alert_id]  # this is only to make it consistent with logic below.
-
-        for a_id in alert_id:
-            response = utils.request(f"https://api.weather.gov/alerts/{a_id}")
-            if not isinstance(response, requests.models.Response):
-                self.alerts.append(response)
-                continue
-
-            info = response.json()
-            del info['@context']
-            self.alerts.append(self._sort_geometry(info))
-
-        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-
-        # if there's only one value in the list, just make it the attribute.
-        if len(self.alerts) == 1:
-            self.alerts = self.alerts[0]
-
-    def _validate_parameter(self, alert_id):
-
-        # test to see if it's either str, list, or tuple.
-        validation = (isinstance(alert_id, str), isinstance(alert_id, list), isinstance(alert_id, tuple))
-        if not any(validation):
-            raise ValueError(f"alert_id should be a string. Got: {type(alert_id)}")
-
-    def filter_by(self, alert_type):
-        r"""Filters all active alerts based upon the alert type.
+    def get_number_of(self, alert_type: Union[str, list]) -> Union[int, list]:
+        r"""A method to give you the number of alerts of a specific type that are active.
 
         Parameters
         ----------
-        alert_type : str
-            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+        alert_type : str, list
+            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch". If it's
+            a list, it will return a list of the number of warnings in the order it's provided. For example,
+            ``get_number_of(['Tornado Warning', 'Freeze Warning'])`` will return the number of tornado warnings
+            and the number of freeze warnings (e.g. ``[1, 10]``)
 
         Raises
         ------
@@ -274,27 +179,25 @@ class AlertById(_Alert):
 
         Returns
         -------
-        list
-            A collection of the filtered alert objects based upon the parameter.
+        int, list
+            The number of alerts that are of the alert type. If a list, the number of alerts in order of the parameter.
 
-        Example
-        -------
-        >>> active_alerts = nwsapy.get_active_alerts()
-        >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
-        [<alerts.floodwarning object at 0x7fcf55199d00>,
-            <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
         """
-        # validate the data
-        self._validate_alert_type(alert_type)
+        self._validate_alert_type(alert_type) # validate data
+        if isinstance(alert_type, str):
+            alert_type = [alert_type]  # this is only to make it consistent with logic below.
 
-        # filter the alerts
-        filtered_alerts = [alert for alert in self.alerts if alert.event == alert_type]
-        return filtered_alerts
+        # it's valid, get it from the counter.
+        count = [self.counter[alert.title()] if alert.title() in self.counter else 0 for alert in alert_type]
+        if len(count) == 1:  # if there's only one alert type that was given.
+            return count[0]
+
+        return count  # otherwise, return the list.
 
 
 @dataclass
-class AlertByMarineRegion(_Alert):
-    r"""A class used to hold information about all active alerts found from ``alerts/active/regions/{region}``
+class ActiveAlerts(_AlertConstructor):
+    r"""A class used to hold information about all active alerts found from ``alerts/active``
 
     Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
         A tornado warning alert would be a tornadowarning object.
@@ -310,6 +213,88 @@ class AlertByMarineRegion(_Alert):
 
     """
 
+    def __init__(self):
+        response = utils.request("https://api.weather.gov/alerts/active")
+        info = response.json()['features']
+        self.alerts = [self._construct_alert(x) for x in info]  # opted for list comp because it's faster
+        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
+
+
+@dataclass
+class AlertById(_AlertConstructor):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/{id}``
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    counter : collections.Counter
+        A collection of the number of alerts there are based upon the event type.
+
+    """
+
+    def __init__(self, alert_id):
+
+        self._validate(alert_id)
+        if isinstance(alert_id, str):
+            alert_id = [alert_id]  # this is only to make it consistent with logic below.
+
+        self.alerts = []
+        for a_id in alert_id: # iterate through the alerts
+            response = utils.request(f"https://api.weather.gov/alerts/{a_id}")
+            if not isinstance(response, requests.models.Response):
+                self.alerts.append(response) # if something weird went wrong, put an error repsonse in.
+                # TODO: handle error responses.
+                continue
+
+            info = response.json() # all is good, construct the alert objects.
+            self.alerts.append(self._construct_alert(info))
+
+        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
+
+        # if there's only one value in the list, just make it the attribute.
+        if len(self.alerts) == 1:
+            self.alerts = self.alerts[0]
+
+    def _validate(self, alert_id):
+
+        # Validate the input data and provide ParameterTypeError.
+
+        invalid = (isinstance(alert_id, str), isinstance(alert_id, list), isinstance(alert_id, tuple))
+        if not any(invalid):  # if it's not string, list, or tuple
+            raise ParameterTypeError(alert_id, 'string, list, or tuple')
+
+        if isinstance(alert_id, str):
+            alert_id = [alert_id]
+
+        for alert in alert_id:
+            if not isinstance(alert, str):
+                raise ParameterTypeError(alert, "string")
+
+
+@dataclass
+class AlertByMarineRegion(_AlertConstructor):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/region/{region}``
+
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
+
+        A small craft advisory alert would be a smallcraftadvisory object.
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    counter : collections.Counter
+        A collection of the number of alerts there are based upon the event type.
+
+    See Also
+    --------
+    :ref:`Valid Data Points - Alerts by Marine Region<alerts_by_marine_table_validation>`
+        Table in the documentation to show what regions are valid for this function.
+
+    """
+
     # AL => Alaska
     # AT => Atlantic Marine
     # GL => Great Lakes
@@ -319,89 +304,107 @@ class AlertByMarineRegion(_Alert):
 
     def __init__(self, region):
 
-        if not isinstance(region, str):  # if it's not string, list, or tuple
-            raise ParameterTypeError(region, 'string')
+        self._validate(region) # make sure the data is valid.
 
-        if region.upper() not in ['AL', 'AT', 'GL', 'GM', 'PA', 'PI']:
-            raise DataValidationError(region)
+        if isinstance(region, str):
+            region = [region]  # make it a list, eliminates unnecessary if/else statements.
 
-        response = utils.request(f"https://api.weather.gov/alerts/active/regions/{region}")
-        info = response.json()['features']
-        self.alerts = [self._sort_geometry(x) for x in info]  # opted for list comp because it's faster
+        self.alerts = []
+        for region_str in region:
+            region_str = region_str.upper()
+            response = utils.request(f"https://api.weather.gov/alerts/active/region/{region_str}")
+            if not isinstance(response, requests.models.Response):
+                self.alerts.append(response)
+                continue
+
+            info = response.json()['features']
+            for x in info:
+                self.alerts.append(self._construct_alert(x))
+
         self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
 
-    def get_number_of(self, alert_type: str) -> int:
-        r"""A method to give you the number of alerts of a specific type that are active.
+        # if there's only one value in the list, just make it the attribute.
+        if len(self.alerts) == 1:
+            self.alerts = self.alerts[0]
 
-        Parameters
-        ----------
-        alert_type : str
-            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
+    def _validate(self, data):
+        for data_val in data:
+            if not isinstance(data_val, str):
+                raise ParameterTypeError(data_val, "string")
 
-        Raises
-        ------
-        nwsapi.ParameterTypeError
-            If the parameter isn't the correct data type (string).
-        nwsapi.DataValidationError
-            If the alert type isn't a valid National Weather Service alert.
+        # checking to make sure that the data is in the possible values.
+        # For better details for the user, print a string of all of the bad data points.
+        valid_list = ['AL', 'AT', 'GL', 'GM', 'PA', 'PI']
+        invalid_data = [value for value in data if value.upper() not in valid_list]
 
-        Returns
-        -------
-        int
-            The number of alerts that are of the alert type.
-
-        Examples
-        --------
-        >>> active_alerts = nwsapi.get_alert_count()
-        >>> active_alerts.get_alert_count('Flood Warning')
-        35
-        """
-        self._validate_alert_type(alert_type)  # validate data
-
-        # valid data type, valid product. Get it from counter. (O(1))
-        if alert_type not in self.counter:
-            return 0
-        else:
-            return self.counter[alert_type]
-
-    def filter_by(self, alert_type):
-        r"""Filters all active alerts based upon the alert type.
-
-        Parameters
-        ----------
-        alert_type : str
-            The type of alert to be searched. Not case sensitive. Examples: "Tornado Warning", "flood watch"
-
-        Returns
-        -------
-        list
-            A collection of the filtered alert objects based upon the parameter. Will return an empty list if there
-            are no alerts based off of the filter type.
-
-        Example
-        -------
-        >>> active_alerts = nwsapy.get_active_alerts()
-        >>> all_flood_warnings = active_alerts.filter_by('Flood Warning')
-        [<alerts.floodwarning object at 0x7fcf55199d00>,
-            <alerts.floodwarning object at 0x7fcf5519cfd0>, ...]
-        """
-        # validate the data
-        self._validate_alert_type(alert_type)
-
-        # filter the alerts
-        filtered_alerts = [alert for alert in self.alerts if alert.event == alert_type]
-        return filtered_alerts
+        if len(invalid_data) > 0:
+            raise DataValidationError(", ".join(invalid_data))
 
 
 @dataclass
-class AlertByArea(_Alert):
+class AlertByArea(_AlertConstructor):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/area/{area}``
 
-    """Not yet implemented."""
-    pass
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
+
+        A small craft advisory alert would be a smallcraftadvisory object.
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    counter : collections.Counter
+        A collection of the number of alerts there are based upon the event type.
+
+    See Also
+    --------
+    :ref:`Valid Data Points - Alerts by Area Table<alerts_by_area_table_validation>`
+        Table in the documentation to show what areas are valid for this function.
+
+    """
+
+    def __init__(self, area):
+        self._validate(area)  # make sure the data is valid.
+
+        if isinstance(area, str):
+            area = [area]  # make it a list, eliminates unnecessary if/else statements.
+
+        self.alerts = []
+        for area_str in area:
+            area_str = area_str.upper()
+            response = utils.request(f"https://api.weather.gov/alerts/active/area/{area_str}")
+            if not isinstance(response, requests.models.Response):
+                self.alerts.append(response)
+                continue
+
+            info = response.json()['features']
+            for x in info:
+                self.alerts.append(self._construct_alert(x))
+
+        self.counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
+
+    def _validate(self, data):
+
+        if isinstance(data, str):
+            data = [data]
+
+        valid_data = ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL',
+                      'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
+                      'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
+                      'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS',
+                      'LM', 'LH', 'LC', 'LE', 'LO']
+
+        for data_val in data:
+            if not isinstance(data_val, str):
+                raise ParameterTypeError(data_val, "string")
+
+            if data_val.upper() not in valid_data:
+                raise DataValidationError(data)
 
 
 @dataclass
-class AlertByCount(_Alert):
+class AlertByCount:
     r"""A class used to hold information about all active alerts found from ``alerts/active/count``
 
     Attributes

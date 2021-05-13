@@ -37,7 +37,13 @@ Table of Contents
    Getting Started <gettingstarted>
    Modules <modules/modules>
    Examples <examples>
-   API Reference <apireference>
+   Full API Reference <apireference>
+
+Contact
+=======
+
+It motivates me to continue support for this package if I hear from the community. If you have questions or comments relating to the package, you can email me at brandonmolyneaux@torandotalk.com. If a bug is identified, open an issue on GitHub.
+
 
 Indices and tables
 ==================

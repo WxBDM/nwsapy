@@ -1,6 +1,6 @@
-=============
-API Reference
-=============
+==================
+Full API Reference
+==================
 
 Functions
 =========
@@ -12,7 +12,7 @@ Alerts
 ======
 
 .. automodule:: alerts
-   :members:
+   	:members:
 
 Glossary
 ========
