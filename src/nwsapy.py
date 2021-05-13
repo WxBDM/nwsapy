@@ -4,7 +4,6 @@ With how this API is designed, you should be using these functions to access all
 Radar, Products, etc).
 
 """
-from errors import ParameterTypeError, DataValidationError
 from typing import Union
 import alerts
 
@@ -28,9 +27,7 @@ def get_alert_by_id(alert_id):
     Parameters
     ----------
     alert_id : int, list/tuple
-        An ID corresponding to an alert. If ID is a list, it will iterate through all of the ID's and
-        give you an object containing all of the alerts associated with the ID. Note that these alerts may include
-        error alerts.
+        An ID/list of ID's corresponding to an alert.
 
     Returns
     -------
@@ -46,10 +43,8 @@ def get_alert_by_marine_region(marine_region: Union[str, list]):
 
     Parameters
     ----------
-    marine_region_string : int, list/tuple
-        An ID corresponding to an alert. If ID is a list, it will iterate through all of the ID's and
-        give you an object containing all of the alerts associated with the ID. Note that these alerts may include
-        error alerts.
+    marine_region : int, list/tuple
+        A string or list/tuple of strings of the areas to fetch.
 
     Returns
     -------
@@ -66,7 +61,24 @@ def get_alert_by_marine_region(marine_region: Union[str, list]):
 
 
 def get_alert_by_area(area):
-    """Not implemented."""
+    """Fetches and organizes a count from ``/alerts/active/area/{area}``
+
+    Parameters
+    ----------
+    area : str, list/tuple
+        A string or list/tuple of strings of the areas to fetch.
+
+    Returns
+    -------
+    alerts.AlertByArea
+        An object that contains the information of the alert.
+
+    See Also
+    --------
+    :ref:`Alerts by Area Table<alerts_by_area_table_validation>`
+        Table in documentation with valid parameter inputs.
+
+    """
     return alerts.AlertByArea(area)
 
 

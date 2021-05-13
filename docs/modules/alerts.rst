@@ -289,6 +289,21 @@ Gives the following result:
 Alerts API Reference
 ^^^^^^^^^^^^^^^^^^^^
 
+.. autofunction:: nwsapy.get_active_alerts
+	:noindex:
+
+.. autofunction:: nwsapy.get_alert_by_area
+	:noindex:
+
+.. autofunction:: nwsapy.get_alert_by_id
+	:noindex:
+
+.. autofunction:: nwsapy.get_alert_by_marine_region
+	:noindex:
+
+.. autofunction:: nwsapy.get_alert_count
+	:noindex:
+
 .. _dynamically-created-alerts:
 .. py:class:: alerts.<Alert Event Name>
 
