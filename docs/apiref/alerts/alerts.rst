@@ -267,9 +267,6 @@ When developing, you may encounter a ``DataValidationError``. This error states 
 	| Extreme Cold Warning                   | High Wind Warning            | Small Craft Advisory For Hazardous Seas | Winter Weather Advisory               |
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
 
-Alerts API Reference
---------------------
-
 .. toctree::
 	:hidden:
 	:maxdepth: 1
