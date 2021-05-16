@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
   name = 'nwsapy',         # How you named your package folder (MyLib)
-  packages = ['src'],   # Chose the same as "name"
+  packages = ['nwsapy'],   # Chose the same as "name"
   long_description=README,
   long_description_content_type="text/markdown",
   version = '0.0.1',      # Start with a small number and increase it with every change you make

@@ -15,7 +15,7 @@ As a visual example, the left side of the image below is a typical JSON response
 
 ## Documentation
 
-Documentation for NWSAPy be found here: [LINK ME]
+Documentation for NWSAPy be found [here](https://nwsapy.readthedocs.io/en/latest/index.html)
 
 ## Contact/Support
 

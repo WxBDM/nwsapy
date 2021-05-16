@@ -37,20 +37,11 @@ Table of Contents
 
 Advantages of using NWSAPy
 ==========================
-- Data validation checks: your data going in is going to be valid to minimize 404 errors.
-- Response error handling is taken care of (i.e. 404, 500, etc)
-- Nearly pure python code
-- Minimal hassle with having to worry if links are formatted correctly.
-- Clean and simplistic code
-- Responses are formatted in an object oriented manner, ready to go.
-- No worries about formats (GeoJSON, JSON-LD, etc). NWSAPy takes care of it for you.
-
-Goals of the Package
-====================
-
-There are 2 goals to the package:
-1. Simplify data retrieval and organization. It takes JSON structured data and converts it into something that's more object-oriented.
-2. One request, one result.
+- **Clean and Simplistic Code** - The syntax is very english-like.
+- **No worries about JSON**. NWSAPy takes care of anything JSON-related, including formats (GeoJSON, JSON-LD, etc).
+- **404 Error Minimization.** This is handled through data validation checks, as well as handling URL construction.
+- **Response errors are handled.** Response errors are handled appropriately.
+- **Consistency matters.** Even if the response doesn't have a specific attribute, NWSAPy makes sure *something* exists so your code doesn't break.
 
 Contact
 =======
