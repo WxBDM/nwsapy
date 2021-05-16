@@ -1,6 +1,6 @@
-# NWSAPy - An Object-Oriented Approach to the National Weather Service API
+# NWS-APy: An Object-Oriented Approach to the National Weather Service API
 
-NWSAPy takes an object-oriented approach to retrieving (GET) and organizing data using the National Weather Service API (found here: https://www.weather.gov/documentation/services-web-api#/)
+NWS-APy takes an object-oriented approach to retrieving (GET) and organizing data using the National Weather Service API (found here: https://www.weather.gov/documentation/services-web-api#/)
 
 There's a few advantages to using this package:
 - **Clean and Simplistic Code** - The syntax is very english-like.

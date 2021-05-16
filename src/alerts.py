@@ -67,8 +67,6 @@ class AlertConstructor:
         """Constructs the object's methods and returns it."""
 
         # these methods are ones that are going to be bound to the object.
-        def repr(self): return "\n".join([f"{attr} : {alert_dictionary[attr]}" for attr in alert_dictionary])
-        def string(self): return f"{alert_dictionary['event']} object"
         def sent_before(self, other): return self.sent > other.sent
         def sent_after(self, other): return self.sent < other.sent
         def effective_before(self, other): return self.effective > other.effective
@@ -80,8 +78,6 @@ class AlertConstructor:
 
         # Create the object and bind the method to it.
         alert = type(alert_dictionary['event'].replace(" ", "").lower(), (), alert_dictionary)
-        alert.__repr__ = MethodType(repr, alert)
-        alert.__str__ = MethodType(string, alert)
         alert.sent_before = MethodType(sent_before, alert)
         alert.sent_after = MethodType(sent_after, alert)
         alert.effective_before = MethodType(effective_before, alert)
@@ -120,7 +116,28 @@ class AlertConstructor:
                 alert_dictionary[time] = datetime.fromisoformat(alert_dictionary[time])
 
 
-class BaseAlert:
+class _AlertIterator:
+
+    def __iter__(self):
+        """Allows for iteration though self.alerts."""
+        self._alert_index = 0
+        return self
+
+    def __next__(self):
+        """Allows for iteration through self.alerts."""
+        if self._alert_index < len(self.alerts):
+            val = self.alerts[self._alert_index]
+            self._alert_index += 1
+            return val
+        else:
+            raise StopIteration
+
+    def __getitem__(self, index):
+        """Allows for alerts object to be directly indexable."""
+        return self.alerts[index]
+
+
+class BaseAlert(_AlertIterator):
 
     @staticmethod
     def _validate_alert_type(alert_type: Union[str, list]):
@@ -302,11 +319,6 @@ class AlertById(BaseAlert):
             self.response_headers.append(response.headers)
 
         self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-        #
-        # # if there's only one value in the list, just make it the attribute.
-        # if len(self.alerts) == 1:
-        #     self.alerts = self.alerts[0]
-        #     self.response_headers = self.response_headers[0]
 
     def _validate(self, alert_id):
 
@@ -370,11 +382,6 @@ class AlertByMarineRegion(BaseAlert):
 
         self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
 
-        # # if there's only one value in the list, just make it the attribute.
-        # if len(self.alerts) == 1:
-        #     self.alerts = self.alerts[0]
-        #     self.response_headers = self.headers[0]
-
     def _validate(self, data):
 
         valid_data = ["AL", "AT", "GL", "GM", "PA", "PI"]
@@ -435,11 +442,6 @@ class AlertByArea(BaseAlert):
             self.response_headers.append(response.headers)
 
         self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-
-        # # if there's only one value in the list, just make it the attribute.
-        # if len(self.alerts) == 1:
-        #     self.alerts = self.alerts[0]
-        #     self.response_headers = self.response_headers[0]
 
     def _validate(self, data):
 
@@ -607,7 +609,7 @@ class AllAlerts(BaseAlert):
 
 
 @dataclass
-class AlertTypes:
+class AlertTypes(_AlertIterator):
     r"""A class used to hold information about the alerts types found from ``alerts/types``.
 
     Attributes
@@ -630,3 +632,61 @@ class AlertTypes:
 
     def __repr__(self):
         return ", ".join(self.alerts)
+
+
+
+
+@dataclass
+class AlertByZone(BaseAlert):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/zone/{zoneId}``.
+
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
+
+        A small craft advisory alert would be a smallcraftadvisory object.
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    response_headers : requests.structures.CaseInsensitiveDict
+        A dictionary containing the response headers.
+
+    Note
+    ----
+    This does not have data validation checks, so ensure that your zone ID's are correct, otherwise
+    you may run into a 404 error.
+
+    """
+    def __init__(self, zoneID):
+
+        self._validate(zoneID)  # make sure the data is valid.
+
+        if isinstance(zoneID, str):
+            zoneID = [zoneID]  # make it a list, eliminates unnecessary if/else statements.
+
+        self.alerts = []
+        self.response_headers = []
+        ac = AlertConstructor()
+        for zone in zoneID:
+            zone = zone.upper()
+            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}")
+            if not isinstance(response, requests.models.Response):
+                self.alerts.append(response)
+                continue
+
+            info = response.json()['features']
+            for x in info:
+                self.alerts.append(ac.construct_alert(x))
+            self.response_headers.append(response.headers)
+
+        self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
+
+    def _validate(self, data):
+
+        if isinstance(data, str):
+            data = [data]
+
+        for data_val in data:
+            if not isinstance(data_val, str):
+                raise ParameterTypeError(data_val, "string")

@@ -1,7 +1,7 @@
 Alerts
 ======
 
-The alerts module retrieves information from ``/alerts/...``. More specifically, this module provides objects for the following urls:
+The alerts module retrieves information from ``/alerts/...``. More specifically, this provides objects for the following urls:
 
 	| ``/alerts``
 	| ``/alerts/active``
@@ -30,6 +30,8 @@ The following table shows all alert-related NWSAPy functions are and what the eq
 +---------------------------------------------+------------------------------------+-------------------------------------+
 | :meth:`nwsapy.get_alert_count()`            | ``/alerts/active/count``           | :class:`alerts.AlertByCount`        |
 +---------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.get_alert_by_zone()`          | ``/alerts/active/zone/{zoneId}``   | :class:`alerts.AlertByZone`         |
++---------------------------------------------+------------------------------------+-------------------------------------+
 | :meth:`nwsapy.get_alert_by_area()`          | ``/alerts/active/area/{area}``     | :class:`alerts.AlertByArea`         |
 +---------------------------------------------+------------------------------------+-------------------------------------+
 | :meth:`nwsapy.get_alert_by_marine_region()` | ``/alerts/active/region/{region}`` | :class:`alerts.AlertByMarineRegion` |
@@ -56,7 +58,7 @@ Let's suppose we're looking to see if a certain city has some kind of alert issu
 	arthur = Point([-101.6916, 41.5717])  # create a shapely point
 	all_alerts = nwsapy.get_active_alerts()  # retrieves all active alerts.
 
-	for alert in all_alerts.alerts: # iterate through the alerts to see if NYC is in any of these alerts.
+	for alert in all_alerts: # iterate through the alerts to see if NYC is in any of these alerts.
 	    if alert.event == "Test Message": # There's always a test message, ignore it.
 	        continue
 
@@ -271,12 +273,12 @@ When developing, you may encounter a ``DataValidationError``. This error states 
 	:hidden:
 	:maxdepth: 1
 	
-	Individual Alerts <IndividualAlerts>
+	Individual Alerts <IndividualAlerts/IndividualAlerts>
 	alerts.AllAlerts <AllAlerts/AllAlerts>
 	alerts.ActiveAlerts <ActiveAlerts/ActiveAlerts>
 	alerts.AlertType <AlertTypes/AlertTypes>
 	alerts.AlertById <AlertById/AlertById>
 	alerts.AlertByCount <AlertByCount/AlertByCount>
-	alerts.AlertByZone <AlertByZone>
+	alerts.AlertByZone <AlertByZone/AlertByZone>
 	alerts.AlertByArea <AlertByArea/AlertByArea>
 	alerts.AlertByMarineRegion <AlertByMarineRegion/AlertByMarineRegion>

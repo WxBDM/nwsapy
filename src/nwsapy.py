@@ -151,3 +151,20 @@ def ping_server() -> utils.ServerPing:
     """
 
     return utils.ServerPing()
+
+
+def get_alert_by_zone(zone_id: Union[str, list]) -> alerts.AlertByZone:
+    """Fetches an alert by the zone ID from ``/alerts/zone/{zoneId}``.
+
+    Parameters
+    ----------
+    zone_id : int, list/tuple
+        An ID/list of ID's corresponding to an alert.
+
+    Returns
+    -------
+    :class:`alerts.AlertByZone`
+        An object containing information of all of the alerts.
+    """
+
+    return alerts.AlertByZone(zone_id)

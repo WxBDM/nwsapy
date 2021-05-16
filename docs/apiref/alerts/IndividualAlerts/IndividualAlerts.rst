@@ -80,7 +80,35 @@ This specific alert would have the following attributes from ``properties``:
 	| ``.ends`` (datetime.datetime)
 	
 	Note that some of the above attributes could also be ``None``.
+
+Individual Alerts: Error
+------------------------
+
+Sometimes, you'll receive an error. Most of the time, it will be a 404 error (and for those not familiar with these kinds of errors, 404 is ``not found``). NWSAPy can't prevent you from getting 404 errors, but there are built-in checks to ensure that 404 errors are minimized.
+
+If you were to receive an error, the JSON format would look as such:
+
+.. code-block::
+
+	{
+	    "correlationId": "3dff7cd2",
+	    "title": "Zone Does Not Exist",
+	    "type": "https://api.weather.gov/problems/InvalidZone",
+	    "status": 404,
+	    "detail": "Forecast zone NVZ does not exist",
+	    "instance": "https://api.weather.gov/requests/3dff7cd2"
+	}
 	
+Which, in turn, would translate to the following attributes:
+
+	| ``.correlationId``
+	| ``.title``
+	| ``.type``
+	| ``.status``
+	| ``.detail``
+	| ``.instance``
+	| ``.event``
+
 Individual Alert API Reference
 ------------------------------
 	
@@ -157,3 +185,15 @@ Individual Alert API Reference
 		:type other: alerts.<Alert Event Name>
 		:rtype: bool - ``True`` if this alert will expire after other. ``False`` otherwise.
    
+
+.. toctree::
+	:hidden:
+	
+	alerts.<Event Name>.sent_before <sent_before>
+	alerts.<Event Name>.sent_after <sent_after>
+	alerts.<Event Name>.effective_before <effective_before>
+	alerts.<Event Name>.effective_after <effective_after>
+	alerts.<Event Name>.onset_before <onset_before>
+	alerts.<Event Name>.onset_after <onset_after>
+	alerts.<Event Name>.expires_before <expires_before>
+	alerts.<Event Name>.expires_after <expires_after>
