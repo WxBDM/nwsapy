@@ -1,0 +1,18 @@
+Alerts by Area
+==============
+
+.. autofunction:: nwsapy.get_alert_by_area
+
+| 
+
+.. autoclass:: alerts.AlertByArea
+	:inherited-members:
+	:members:
+
+.. toctree::
+	:maxdepth: 1
+	:hidden:
+	
+	alerts.AlertByArea.count <count>
+	alerts.AlertByArea.filter_by <filter_by>
+	alerts.AlertByArea.to_dataframe <dataframe>
