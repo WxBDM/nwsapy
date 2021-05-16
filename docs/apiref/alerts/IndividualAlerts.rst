@@ -81,8 +81,8 @@ This specific alert would have the following attributes from ``properties``:
 	
 	Note that some of the above attributes could also be ``None``.
 	
-API Reference
--------------
+Individual Alert API Reference
+------------------------------
 	
 .. _dynamically-created-alerts:
 .. py:class:: alerts.<Alert Event Name>

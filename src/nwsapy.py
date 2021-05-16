@@ -61,7 +61,7 @@ def get_alert_types() -> alerts.AlertTypes:
 
     Returns
     -------
-    :class:`alerts.Types`
+    :class:`alerts.AlertTypes`
         An object containing information of the alert types.
     """
 

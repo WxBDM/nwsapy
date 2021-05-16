@@ -271,24 +271,15 @@ Alerts API Reference
 --------------------
 
 .. toctree::
-	:maxdepth: 2
+	:hidden:
+	:maxdepth: 1
 	
 	Individual Alerts <IndividualAlerts>
 	alerts.AllAlerts <AllAlerts/AllAlerts>
 	alerts.ActiveAlerts <ActiveAlerts/ActiveAlerts>
-	alerts.AlertType <AlertTypes>
+	alerts.AlertType <AlertTypes/AlertTypes>
 	alerts.AlertById <AlertById/AlertById>
 	alerts.AlertByCount <AlertByCount/AlertByCount>
 	alerts.AlertByZone <AlertByZone>
 	alerts.AlertByArea <AlertByArea/AlertByArea>
 	alerts.AlertByMarineRegion <AlertByMarineRegion/AlertByMarineRegion>
-
-
-.. autofunction:: nwsapy.get_alert_types
-	:noindex:
-
-.. autoclass: alerts.AlertTypes
-	:noindex:
-	:members:
-	
-	.. note:: This does not contain the dynamically created alert objects, as it only contains a count of the active alerts.
