@@ -6,44 +6,49 @@ There should not be any SQL queries run from any file. Create a method here and 
 import sqlite3
 import pandas as pd
 
-class Database:
-    _conn = None
-    _cursor = None
 
-    def __init__(self, table_name = None, *args, **kwargs):
-        self.database = "nwsinfo.db"
-        self.table_name = table_name
+def set_user_agent(user_agent_str):
+    conn = sqlite3.connect("headers.db")
+    cursor = conn.cursor()
 
-    def _open_connection(self):
-        """Opens a connection to the database."""
+    # create the table
+    query = "CREATE TABLE IF NOT EXISTS headers (id INTEGER PRIMARY KEY, keys text, value_pair text);"
+    cursor.execute(query)
 
-        if isinstance(self.table_name, type(None)):
-            raise AttributeError("Table name must be set (Database.table_name = 'your table name')")
+    # add user agent to db
+    # check to see if it's already in the db
+    query = "SELECT EXISTS(SELECT 1 FROM headers);"
+    result = cursor.execute(query).fetchall()
+    if result[0][0] == 0:
+        query = "INSERT INTO headers (id, keys, value_pair) VALUES (?, ?, ?);"
+        cursor.execute(query, (1, 'User-Agent', user_agent_str))
+        conn.commit()
 
-        self._conn = sqlite3.connect(self.database)
-        self._cursor = self._conn.cursor()
+    # If it's already set, then update it.
+    else:
+        query = "UPDATE headers SET keys = ?, value_pair = ? WHERE keys = 'User-Agent';"
+        cursor.execute(query, ('User-Agent', user_agent_str))
+        conn.commit()
 
-    def _close_connection(self):
-        """Closes the connection to the database."""
+    conn.close()
 
-        self._conn.close()
-        self._conn = None
-        self._cursor = None
 
-    def get_product_types(self):
-        """Returns a pandas DataFrame of the product types.
+def get_user_agent_dict():
+    conn = sqlite3.connect("headers.db")
+    cursor = conn.cursor()
 
-        Returns
-        =======
-            df => pandas dataframe for producttypes table.
-                Columns: productCode, productName
-        """
+    # check to see if it's in the database. If so, get it.
+    query = "SELECT EXISTS(SELECT keys FROM headers WHERE keys = 'User-Agent');"
+    result = cursor.execute(query).fetchall()
+    if result[0][0] == 1:
+        query = "SELECT keys, value_pair FROM headers WHERE keys = 'User-Agent';"
+        info = cursor.execute(query)
+        info = info.fetchall()
+        return dict({info[0][0] : info[0][1]})
 
-        self._open_connection()
+    # If it's already set, then update it.
+    else:
+        print("User-Agent hasn't been set. Be sure to set it using `nwsapy.set_user_agent()")
+        return {"NWSAPy" : "nulluser@email.com"}
 
-        df = pd.read_sql_query(f"SELECT * FROM {self.table_name}", self._conn)
-        df = df.drop(columns = ['id'])
-
-        self._close_connection()
-
-        return df
+    conn.close()

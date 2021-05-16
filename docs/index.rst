@@ -24,10 +24,7 @@ Will print::
 > Severe Thunderstorm Warning issued May 12 at 2:50PM EDT until May 12 at 3:45PM EDT by NWS Jacksonville FL
 > Severe Thunderstorm Warning issued May 12 at 2:44PM EDT until May 12 at 3:45PM EDT by NWS Jacksonville FL
 
-If we were to show the area description (that is, ``print(storm.areaDesc)``)::
-
-> Glynn, GA
-> Baker, FL; Columbia, FL; Hamilton, FL; Clinch, GA; Echols, GA; Ware, GA
+The National Weather Service API can be found here: https://www.weather.gov/documentation/services-web-api#/
 
 Table of Contents
 =================
@@ -35,9 +32,25 @@ Table of Contents
    :maxdepth: 1
    
    Getting Started <gettingstarted>
-   Modules <modules/modules>
    Examples <examples>
-   Full API Reference <apireference>
+   API Reference <apiref>
+
+Advantages of using NWSAPy
+==========================
+- Data validation checks: your data going in is going to be valid to minimize 404 errors.
+- Response error handling is taken care of (i.e. 404, 500, etc)
+- Nearly pure python code
+- Minimal hassle with having to worry if links are formatted correctly.
+- Clean and simplistic code
+- Responses are formatted in an object oriented manner, ready to go.
+- No worries about formats (GeoJSON, JSON-LD, etc). NWSAPy takes care of it for you.
+
+Goals of the Package
+====================
+
+There are 2 goals to the package:
+1. Simplify data retrieval and organization. It takes JSON structured data and converts it into something that's more object-oriented.
+2. One request, one result.
 
 Contact
 =======
