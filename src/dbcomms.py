@@ -4,7 +4,6 @@ There should not be any SQL queries run from any file. Create a method here and 
 """
 
 import sqlite3
-import pandas as pd
 
 
 def set_user_agent(user_agent_str):

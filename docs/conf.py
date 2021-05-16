@@ -49,7 +49,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 extensions.append("sphinxjp.themes.basicstrap")
-html_theme = 'basicstrap' # I like 'nature', 'sphinx_rtd_theme'
 html_theme = 'pydata_sphinx_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,

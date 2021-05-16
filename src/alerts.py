@@ -157,9 +157,9 @@ class BaseAlert:
 
         Raises
         ------
-        nwsapi.ParameterTypeError
+        nwsapy.ParameterTypeError
             If the parameter isn't the correct data type (string).
-        nwsapi.DataValidationError
+        nwsapy.DataValidationError
             If the alert type isn't a valid National Weather Service alert.
 
         Returns
@@ -198,9 +198,9 @@ class BaseAlert:
 
         Raises
         ------
-        nwsapi.ParameterTypeError
+        nwsapy.ParameterTypeError
             If the parameter isn't the correct data type (string).
-        nwsapi.DataValidationError
+        nwsapy.DataValidationError
             If the alert type isn't a valid National Weather Service alert.
             See: :ref:`Valid Alert Types<valid_nws_alert_products>`
 
