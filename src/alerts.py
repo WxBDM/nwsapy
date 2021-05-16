@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from types import MethodType
 from typing import Union
 import collections
-import pprint
 
 from shapely.geometry import Point, Polygon, MultiPoint
 from datetime import datetime
