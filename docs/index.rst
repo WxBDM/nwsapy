@@ -7,7 +7,7 @@
 NWSAPy: An Object Oriented Approach to the NWS API
 ==================================================
 
-NWSAPy (APy, for short) is designed to streamline the process of retreiving information from the National Weather Service API. It fetches (GET) then organizes the data in an object-oriented manner. For example, if we wanted to show the headline for all of the current severe thunderstorm warnings:
+NWSAPy (APy, for short) is designed to streamline the process of retrieving information from the National Weather Service API. It fetches (GET) then organizes the data in an object-oriented manner. For example, if we wanted to show the headline for all of the current severe thunderstorm warnings:
 
 .. code-block:: python
 

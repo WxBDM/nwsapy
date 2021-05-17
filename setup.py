@@ -13,7 +13,7 @@ setup(
   packages = ['nwsapy'],   # Chose the same as "name"
   long_description=README,
   long_description_content_type="text/markdown",
-  version = '0.0.t001',      # Start with a small number and increase it with every change you make
+  version = '0.1.0',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'A package to help with NWS API requests',   # Give a short description about your library
   author = 'Brandon Molyneaux',                   # Type in your name

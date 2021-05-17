@@ -24,8 +24,8 @@ import pandas as pd
 import numpy as np
 import requests
 
-from errors import ParameterTypeError, DataValidationError
-import utils as utils
+from nwsapy.errors import ParameterTypeError, DataValidationError
+import nwsapy.utils as utils
 
 
 class AlertConstructor:
@@ -515,6 +515,7 @@ class AlertByCount:
 
     def __init__(self, user_agent):
         response = utils.request("https://api.weather.gov/alerts/active/count", headers = user_agent)
+        self.response_headers = response.headers
 
         if isinstance(response, requests.models.Response):
             info = response.json()

@@ -4,7 +4,7 @@ import requests
 from requests.exceptions import HTTPError
 
 
-def request(url, headers=dict({'User-Agent' : '(NWSAPy, no-email@email.com)'})):
+def request(url, headers):
     # requests a url. For this purpose, this should be a NWS API url.
     # list of URLs: https://www.weather.gov/documentation/services-web-api#/
 

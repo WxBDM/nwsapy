@@ -5,8 +5,8 @@ Radar, Products, etc).
 
 """
 from typing import Union
-import alerts
-from errors import ParameterTypeError
+import nwsapy.alerts as alerts
+from nwsapy.errors import ParameterTypeError
 
 # needed: https://api.weather.gov/openapi.json
 
@@ -16,10 +16,12 @@ class nwsapy:
     _app = None
     _contact = None
     _user_agent = "(NWSAPy, test@test.com)"
+    _user_agent_to_d = {'User-Agent' : _user_agent}
 
     def _check_user_agent(self):
         if self._user_agent == "(NWSAPy, test@test.com)":
-            print("Be sure to set the user agent: nwsapy.set_user_agent(app_name, contact)")
+            print("Be sure to set the user agent. To prevent this message from appearing"
+                  " again, use: nwsapy.set_user_agent(app_name, contact)")
 
     def set_user_agent(self, app_name, contact):
         """Sets the User-Agent in header for requests. This should be unique to your application.
@@ -48,6 +50,7 @@ class nwsapy:
         self._app = app_name
         self._contact = contact
         self._user_agent = f"({self._app}, {contact})"
+        self._user_agent_to_d = dict({'User-Agent' : self._user_agent})
 
     def get_all_alerts(self) -> alerts.AllAlerts:
         """Fetches all active alerts from ``/alerts``.
@@ -58,7 +61,7 @@ class nwsapy:
             An object that contains the information of all alerts.
         """
         self._check_user_agent()
-        return alerts.AllAlerts(self._user_agent)
+        return alerts.AllAlerts(self._user_agent_to_d)
 
     def get_active_alerts(self) -> alerts.ActiveAlerts:
         """Fetches all active alerts from ``/alerts/active``.
@@ -69,7 +72,7 @@ class nwsapy:
             An object that contains the information of the current alerts.
         """
         self._check_user_agent()
-        return alerts.ActiveAlerts(self._user_agent)
+        return alerts.ActiveAlerts(self._user_agent_to_d)
 
     def get_alert_types(self) -> alerts.AlertTypes:
         """Fetches the alert types from ``/alerts/types``.
@@ -80,7 +83,7 @@ class nwsapy:
             An object containing information of the alert types.
         """
         self._check_user_agent()
-        return alerts.AlertTypes(self._user_agent)
+        return alerts.AlertTypes(self._user_agent_to_d)
 
     def get_alert_by_id(self, alert_id: Union[str, list]) -> alerts.AlertById:
         """Fetches an alert by the ID from ``/alerts/{id}``.
@@ -96,7 +99,7 @@ class nwsapy:
             An object containing information of all of the alerts.
         """
         self._check_user_agent()
-        return alerts.AlertById(alert_id, self._user_agent)
+        return alerts.AlertById(alert_id, self._user_agent_to_d)
 
     def get_alert_by_marine_region(self, marine_region: Union[str, list]) -> alerts.AlertByMarineRegion:
         """Fetches an alert by the ID from ``/alerts/{id}``.
@@ -118,7 +121,7 @@ class nwsapy:
 
         """
         self._check_user_agent()
-        return alerts.AlertByMarineRegion(marine_region, self._user_agent)
+        return alerts.AlertByMarineRegion(marine_region, self._user_agent_to_d)
 
     def get_alert_by_area(self, area: Union[str, list]) -> alerts.AlertByArea:
         """Fetches and organizes a count from ``/alerts/active/area/{area}``.
@@ -140,7 +143,7 @@ class nwsapy:
 
         """
         self._check_user_agent()
-        return alerts.AlertByArea(area, self._user_agent)
+        return alerts.AlertByArea(area, self._user_agent_to_d)
 
     def get_alert_count(self) -> alerts.AlertByCount:
         """Fetches and organizes a count from ``/alerts/active/count``.
@@ -152,7 +155,7 @@ class nwsapy:
 
         """
         self._check_user_agent()
-        return alerts.AlertByCount(self._user_agent)
+        return alerts.AlertByCount(self._user_agent_to_d)
 
     def ping_server(self) -> alerts.ServerPing:
         """Pings https://api.weather.gov/ to see status
@@ -162,7 +165,7 @@ class nwsapy:
         :class:`utils.ServerPing`
         """
         self._check_user_agent()
-        return alerts.ServerPing(self._user_agent)
+        return alerts.ServerPing(self._user_agent_to_d)
 
     def get_alert_by_zone(self, zone_id: Union[str, list]) -> alerts.AlertByZone:
         """Fetches an alert by the zone ID from ``/alerts/zone/{zoneId}``.
@@ -178,5 +181,5 @@ class nwsapy:
             An object containing information of all of the alerts.
         """
         self._check_user_agent()
-        return alerts.AlertByZone(zone_id, self._user_agent)
+        return alerts.AlertByZone(zone_id, self._user_agent_to_d)
 

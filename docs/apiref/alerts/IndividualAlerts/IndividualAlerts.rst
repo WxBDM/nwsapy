@@ -3,9 +3,7 @@ Individual Alerts
 
 When an alerts object is given to you, there's an internal list (can be called by ``.alerts``) containing the individual alerts. Each of these indivual alerts are an object. Thus, ``.alerts`` is a list of individual alert objects. The type is based upon the type of alert it is. For example, an alert for a Frost Advisory would be a ``frostadvisory`` object. Similarily, a tornado warning alert object would be type ``tornadowarning``.
 
-.. important:: Each alert that is dynamically created is slightly different depending upon which function is called. It is relatively difficult to document exactly what are in these objects because of this. In the API Reference section (both full and here), the methods for the individual alerts are documented. In order to see the attributes, it is recommended to call ``dir`` on the object. The documentation for these dynamically created alerts are located :ref:`here<dynamically-created-alerts>`.
-
-Each alert property is stored as an attribute. So, for example, let's say that we are looking at the following special marine warning in the API web page (note that a lot of information is removed for simplicity). We would expect to see something like this:
+Each alert property is stored as an attribute. So, for example, let's say that we are looking at the following special marine warning in the API web page (note that a lot of information is removed for explaination purposes). We would expect to see something like this:
 
 .. code-block::
 
@@ -82,6 +80,7 @@ This specific alert would have the following attributes from ``properties``:
 	Note that some of the above attributes could also be ``None``.
 
 .. _individual_alerts_error:
+
 Individual Alerts: Error
 ------------------------
 
@@ -112,7 +111,38 @@ Which, in turn, would translate to the following attributes:
 
 Individual Alert API Reference
 ------------------------------
+
+Error
+^^^^^
+
+.. py:class:: alerts.error
+
+	An error object explaining the error. This error is typically a 404, but also could be 500.
 	
+	.. attribute:: correlationId
+		:type: str
+	
+	.. attribute:: title
+		:type: str
+	
+	.. attribute:: type
+		:type: str
+	
+	.. attribute:: status
+		:type: int
+	
+	.. attribute:: detail
+		:type: str
+	
+	.. attribute:: instance
+		:type: str
+	
+	.. attribute:: event
+		:type: str or None
+
+Individual Alert
+^^^^^^^^^^^^^^^^
+
 .. _dynamically-created-alerts:
 .. py:class:: alerts.<Alert Event Name>
 
@@ -120,59 +150,84 @@ Individual Alert API Reference
    
    For example, if the event is a tornado warning, the name of the dynamically created alert would be ``alerts.tornadowarning``. Similarily, for a small craft advisory, it would be ``alerts.smallcraftadvisory``, and so forth.
    
-	.. attention:: Each alert that is dynamically created is different depending upon which command is called. Documented below are the methods for each individual alert objects, but it is recommended to use call ``dir`` on the individual alert to see their attributes.
-   
-   	.. py:attr::`affectedZones`
+   	.. attribute:: affectedZones
+		:type: str
 	
-	.. py:attr::`.areaDesc`
+	.. attribute:: areaDesc
+		:type: str
 	
-	.. py:attr::`.category`
+	.. attribute:: category
+		:type: str
 	
-	.. py:attr::`.description`
+	.. attribute:: description
+		:type: str
 	
-	.. py:attr::`.effective`
+	.. attribute:: effective
+		:type: datetime.datetime
 	
-	.. py:attr::`.ends`
+	.. attribute:: ends
+		:type: datetime.datetime
 	
-	.. py:attr::`.event`
+	.. attribute:: event
+		:type: str
 	
-	.. py:attr::`.effective`
+	.. attribute:: effective
+		:type: datetime.datetime
+		:noindex:
 	
-	.. py:attr::`.geocode`
+	.. attribute:: geocode
+		:type: dict
 	
-	.. py:attr::`.headline`
+	.. attribute:: headline
+		:type: str
 	
-	.. py:attr::`.id`
+	.. attribute:: id
+		:type: str
 	
-	.. py:attr::`.instruction`
+	.. attribute:: instruction
+		:type: str
 	
-	.. py:attr::`.messageType`
+	.. attribute:: messageType
+		:type: str
 	
-	.. py:attr::`.onset`
+	.. attribute:: onset
+		:type: datetime.datetime
 	
-	.. py:attr::`.parameters`
+	.. attribute:: parameters
+		:type: dict
 	
-	.. py:attr::`.points`
+	.. attribute:: points
+		:type: list, containing shapely.Point
 	
-	.. py:attr::`.points_collection`
+	.. attribute:: points_collection
+		:type: shapely.MultiPoint
 	
-	.. py:attr::`.polygon`
+	.. attribute:: polygon
+		:type: shapely.Polygon
 	
-	.. py:attr::`.references`
+	.. attribute:: references
+		:type: dict
 	
-	.. py:attr::`.sender`
+	.. attribute:: sender
+		:type: str
 	
-	.. py:attr::`.senderName`
+	.. attribute:: senderName
+		:type: str
 	
-	.. py:attr::`.sent`
+	.. attribute:: sent
+		:type: datetime.datetime
 	
-	.. py:attr::`.series`
+	.. attribute:: series
+		:type: str
 	
-	.. py:attr::`.severity`
+	.. attribute:: severity
+		:type: str
 	
-	.. py:attr::`.status`
+	.. attribute:: status
+		:type: str
 	
-	.. py:attr::`.urgency`
+	.. attribute:: urgency
+		:type: str
 	
 	.. py:method:: sent_before(other)
 	

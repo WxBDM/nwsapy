@@ -37,7 +37,7 @@ The following table shows all alert-related NWSAPy functions are and what the eq
 | :meth:`nwsapy.nwsapy.get_alert_by_marine_region()` | ``/alerts/active/region/{region}`` | :class:`alerts.AlertByMarineRegion` |
 +----------------------------------------------------+------------------------------------+-------------------------------------+
 
-For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
+For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
 
 
 Examples Using the Alerts
@@ -45,7 +45,7 @@ Examples Using the Alerts
 
 .. _alerts_example_1:
 
-**Example 1:** ``nwsapy.get_active_alerts()``
+**Example 1:** :meth:`nwsapy.nwsapy.get_active_alerts()`
 
 Let's suppose we're looking to see if a certain city has some kind of alert issued for it.
 
