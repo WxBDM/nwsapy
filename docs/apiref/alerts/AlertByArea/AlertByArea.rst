@@ -1,11 +1,11 @@
 Alerts by Area
 ==============
 
-.. autofunction:: nwsapy.get_alert_by_area
+.. autofunction:: nwsapy.nwsapy.get_alert_by_area
 
 | 
 
-.. autoclass:: alerts.AlertByArea
+.. autoclass:: nwsapy.alerts.AlertByArea
 	:inherited-members:
 	:members:
 

@@ -2,7 +2,6 @@
 
 import requests
 from requests.exceptions import HTTPError
-import dbcomms
 
 
 def request(url, headers=dict({'User-Agent' : '(NWSAPy, no-email@email.com)'})):
@@ -57,11 +56,3 @@ def valid_products():
             'Wind Advisory', 'Wind Chill Advisory', 'Wind Chill Warning', 'Wind Chill Watch', 'Winter Storm Warning',
             'Winter Storm Watch', 'Winter Weather Advisory']
 
-
-class ServerPing:
-
-    def __init__(self):
-
-        response = request("https://api.weather.gov/", headers = dbcomms.get_user_agent_dict())
-        self.status = response.json()['status']
-        self.response_headers = response.headers

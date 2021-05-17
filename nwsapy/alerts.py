@@ -25,8 +25,7 @@ import numpy as np
 import requests
 
 from errors import ParameterTypeError, DataValidationError
-import utils
-import dbcomms
+import utils as utils
 
 
 class AlertConstructor:
@@ -220,7 +219,6 @@ class BaseAlert(_AlertIterator):
             If the alert type isn't a valid National Weather Service alert.
             See: :ref:`Valid Alert Types<valid_nws_alert_products>`
 
-
         Returns
         -------
         int, list
@@ -235,6 +233,8 @@ class BaseAlert(_AlertIterator):
         count = [self._counter[alert.title()] if alert.title() in self._counter else 0 for alert in alert_type]
         if len(count) == 1:  # if there's only one alert type that was given.
             return count[0]
+        if len(count) == 0: # if there's zero, then give 0.
+            return 0
 
         return count  # otherwise, return the list.
 
@@ -257,7 +257,7 @@ class BaseAlert(_AlertIterator):
 
 @dataclass
 class ActiveAlerts(BaseAlert):
-    r"""A class used to hold information about all active alerts found from ``alerts/active``
+    r"""A class used to hold information about all active alerts found from ``alerts/active``.
 
     Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
         A tornado warning alert would be a tornadowarning object.
@@ -271,10 +271,15 @@ class ActiveAlerts(BaseAlert):
     response_headers : requests.structures.CaseInsensitiveDict
         A dictionary containing the response headers.
 
+    See Also
+    --------
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
     """
 
-    def __init__(self):
-        response = utils.request("https://api.weather.gov/alerts/active")
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts/active", user_agent)
 
         if isinstance(response, requests.models.Response):
             info = response.json()['features']
@@ -297,9 +302,14 @@ class AlertById(BaseAlert):
     response_headers : requests.structures.CaseInsensitiveDict
         A dictionary containing the response headers.
 
+    See Also
+    --------
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
     """
 
-    def __init__(self, alert_id):
+    def __init__(self, alert_id, user_agent):
 
         self._validate(alert_id)
         if isinstance(alert_id, str):
@@ -309,7 +319,7 @@ class AlertById(BaseAlert):
         self.response_headers = []
         ac = AlertConstructor()
         for a_id in alert_id:  # iterate through the alerts
-            response = utils.request(f"https://api.weather.gov/alerts/{a_id}")
+            response = utils.request(f"https://api.weather.gov/alerts/{a_id}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)  # if something weird went wrong, put an error response in.
                 continue
@@ -356,9 +366,11 @@ class AlertByMarineRegion(BaseAlert):
     --------
     :ref:`Valid Data Points - Alerts by Marine Region<alerts_by_marine_table_validation>`
         Table in the documentation to show what regions are valid for this function.
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
 
     """
-    def __init__(self, region):
+    def __init__(self, region, user_agent):
 
         self._validate(region)  # make sure the data is valid.
 
@@ -370,7 +382,7 @@ class AlertByMarineRegion(BaseAlert):
         ac = AlertConstructor()
         for region_str in region:
             region_str = region_str.upper()
-            response = utils.request(f"https://api.weather.gov/alerts/active/region/{region_str}")
+            response = utils.request(f"https://api.weather.gov/alerts/active/region/{region_str}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
                 continue
@@ -416,10 +428,12 @@ class AlertByArea(BaseAlert):
     --------
     :ref:`Valid Data Points - Alerts by Area Table<alerts_by_area_table_validation>`
         Table in the documentation to show what areas are valid for this function.
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
 
     """
 
-    def __init__(self, area):
+    def __init__(self, area, user_agent):
         self._validate(area)  # make sure the data is valid.
 
         if isinstance(area, str):
@@ -430,7 +444,7 @@ class AlertByArea(BaseAlert):
         ac = AlertConstructor()
         for area_str in area:
             area_str = area_str.upper()
-            response = utils.request(f"https://api.weather.gov/alerts/active/area/{area_str}")
+            response = utils.request(f"https://api.weather.gov/alerts/active/area/{area_str}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
                 continue
@@ -499,8 +513,8 @@ class AlertByCount:
     zones = None
     alerts = None
 
-    def __init__(self):
-        response = utils.request("https://api.weather.gov/alerts/active/count")
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts/active/count", headers = user_agent)
 
         if isinstance(response, requests.models.Response):
             info = response.json()
@@ -513,7 +527,7 @@ class AlertByCount:
         else:
             self.alerts = [response]
 
-    def _filter_by(self, region_area_or_zone, filter, docs_str):  # private method, used to refactor filter_x methods.
+    def _filter_by(self, region_area_or_zone, filter, docs_str) -> dict:  # private method, used to refactor filter_x methods.
         """Used to refactor filter_x methods. Much cleaner this way."""
 
         valid = (isinstance(filter, str), isinstance(filter, list), isinstance(filter, tuple))
@@ -532,7 +546,7 @@ class AlertByCount:
 
         return filtered_d
 
-    def filter_marine_regions(self, region: Union[str, list, tuple]) -> list:
+    def filter_marine_regions(self, region: Union[str, list, tuple]) -> dict:
         r"""Filters all active alerts based upon the marine region.
 
         Parameters
@@ -546,9 +560,10 @@ class AlertByCount:
             Dictionary with key:value pairs being region:count.
 
         """
-        return self._filter_by(self.regions, region, "Documentation link goes here.")
+        return self._filter_by(self.regions, region,
+                        "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_marine_regions.html")
 
-    def filter_land_areas(self, area: Union[str, list, tuple]) -> list:
+    def filter_land_areas(self, area: Union[str, list, tuple]) -> dict:
         r"""Filters all active alerts based upon the land area.
 
         Parameters
@@ -562,9 +577,10 @@ class AlertByCount:
             Dictionary with key:value pairs being area:count.
 
         """
-        return self._filter_by(self.areas, area, "Documentation link goes here.")
+        return self._filter_by(self.areas, area,
+                            "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_land_areas.html")
 
-    def filter_zones(self, zone: Union[str, list, tuple]) -> list:
+    def filter_zones(self, zone: Union[str, list, tuple]) -> dict:
         r"""Filters all active alerts based upon the marine region.
 
         Parameters
@@ -578,7 +594,8 @@ class AlertByCount:
             Dictionary with key:value pairs being zone:count.
 
         """
-        return self._filter_by(self.zones, zone, "Documentation link goes here.")
+        return self._filter_by(self.zones, zone,
+                            "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_zones.html")
 
 
 @dataclass
@@ -593,9 +610,14 @@ class AllAlerts(BaseAlert):
     response_headers : requests.structures.CaseInsensitiveDict
         A dictionary containing the response headers.
 
+    See Also
+    --------
+    :ref:`Individual Alerts`<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
     """
-    def __init__(self):
-        response = utils.request("https://api.weather.gov/alerts", headers = dbcomms.get_user_agent_dict())
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts", headers = user_agent)
 
         if isinstance(response, requests.models.Response): # successful retrieval
             info = response.json()['features']
@@ -621,8 +643,8 @@ class AlertTypes(_AlertIterator):
 
     """
 
-    def __init__(self):
-        response = utils.request("https://api.weather.gov/alerts/types", headers = dbcomms.get_user_agent_dict())
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts/types", headers = user_agent)
         if isinstance(response, requests.models.Response): # successful retrieval.
             self.alerts = response.json()['eventTypes']
         else:
@@ -632,8 +654,6 @@ class AlertTypes(_AlertIterator):
 
     def __repr__(self):
         return ", ".join(self.alerts)
-
-
 
 
 @dataclass
@@ -657,8 +677,13 @@ class AlertByZone(BaseAlert):
     This does not have data validation checks, so ensure that your zone ID's are correct, otherwise
     you may run into a 404 error.
 
+    See Also
+    --------
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
     """
-    def __init__(self, zoneID):
+    def __init__(self, zoneID, user_agent):
 
         self._validate(zoneID)  # make sure the data is valid.
 
@@ -670,7 +695,7 @@ class AlertByZone(BaseAlert):
         ac = AlertConstructor()
         for zone in zoneID:
             zone = zone.upper()
-            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}")
+            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}", headers= user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
                 continue
@@ -690,3 +715,12 @@ class AlertByZone(BaseAlert):
         for data_val in data:
             if not isinstance(data_val, str):
                 raise ParameterTypeError(data_val, "string")
+
+
+class ServerPing:
+
+    def __init__(self, user_agent):
+
+        response = utils.request("https://api.weather.gov/", headers= user_agent)
+        self.status = response.json()['status']
+        self.response_headers = response.headers

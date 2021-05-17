@@ -81,6 +81,7 @@ This specific alert would have the following attributes from ``properties``:
 	
 	Note that some of the above attributes could also be ``None``.
 
+.. _individual_alerts_error:
 Individual Alerts: Error
 ------------------------
 
@@ -121,6 +122,58 @@ Individual Alert API Reference
    
 	.. attention:: Each alert that is dynamically created is different depending upon which command is called. Documented below are the methods for each individual alert objects, but it is recommended to use call ``dir`` on the individual alert to see their attributes.
    
+   	.. py:attr::`affectedZones`
+	
+	.. py:attr::`.areaDesc`
+	
+	.. py:attr::`.category`
+	
+	.. py:attr::`.description`
+	
+	.. py:attr::`.effective`
+	
+	.. py:attr::`.ends`
+	
+	.. py:attr::`.event`
+	
+	.. py:attr::`.effective`
+	
+	.. py:attr::`.geocode`
+	
+	.. py:attr::`.headline`
+	
+	.. py:attr::`.id`
+	
+	.. py:attr::`.instruction`
+	
+	.. py:attr::`.messageType`
+	
+	.. py:attr::`.onset`
+	
+	.. py:attr::`.parameters`
+	
+	.. py:attr::`.points`
+	
+	.. py:attr::`.points_collection`
+	
+	.. py:attr::`.polygon`
+	
+	.. py:attr::`.references`
+	
+	.. py:attr::`.sender`
+	
+	.. py:attr::`.senderName`
+	
+	.. py:attr::`.sent`
+	
+	.. py:attr::`.series`
+	
+	.. py:attr::`.severity`
+	
+	.. py:attr::`.status`
+	
+	.. py:attr::`.urgency`
+	
 	.. py:method:: sent_before(other)
 	
 		Compares ``self.sent`` to determine if this alert was sent before other.

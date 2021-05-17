@@ -6,7 +6,7 @@ Examples
 Example 1: Asynchronous Method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let's suppose you're putting togther an application that requires asynchronous programming. NWSAPy doesn't support this directly, but one workaround is utilizing ``await asyncio.sleep()``. The following example shows a method that allows for asynchronous programming:
+Let's suppose you're putting togther an application that requires asynchronous programming. NWSAPy doesn't support this directly, but one workaround is utilizing ``await asyncio.sleep()``. The following example shows a method that will check every 45 seconds for tornado warnings and save the descriptions and which tornado warning expires first:
 
 .. code-block:: python
 
@@ -38,3 +38,19 @@ Let's suppose you're putting togther an application that requires asynchronous p
 
 	# create a task running in the background
 	self.application.create_task(tor_warnings_every_45_seconds)
+
+
+.. toctree::
+    :hidden:
+	
+    Alerts <apiref/alerts/alerts>
+    Glossary <apiref/glossary>
+    Gridpoints <apiref/gridpoints>
+    Icons <apiref/icons>
+    Thumbnail <apiref/thumbnails>
+    Stations <apiref/stations>
+    Offices <apiref/offices>
+    Points <apiref/points>
+    Radar <apiref/radar>
+    Products <apiref/products>
+    Zones <apiref/zones>

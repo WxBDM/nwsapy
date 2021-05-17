@@ -1,11 +1,11 @@
 Active Alerts
 =============
 
-.. autofunction:: nwsapy.get_active_alerts
+.. autofunction:: nwsapy.nwsapy.get_active_alerts
 
 | 
 
-.. autoclass:: alerts.ActiveAlerts
+.. autoclass:: nwsapy.alerts.ActiveAlerts
 	:inherited-members:
 	:members:
 

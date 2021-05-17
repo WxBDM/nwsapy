@@ -1,11 +1,14 @@
 Alert Count
 ===========
 
-.. autofunction:: nwsapy.get_alert_count
+.. autofunction:: nwsapy.nwsapy.get_alert_count
 
 |
 
-.. autoclass:: alerts.AlertByCount
+.. note:: If there is not an error (404, 500, etc) then ``.alerts`` will be ``None``. All other attributes will have values. If there is an error, then ``.alerts`` will contain an Individual Alert Errror and all other attributes will be ``None``.
+
+
+.. autoclass:: nwsapy.alerts.AlertByCount
 	:members:
 
 	.. note:: This does not contain the dynamically created alert objects, as it only contains a count of the active alerts.

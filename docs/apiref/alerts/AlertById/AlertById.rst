@@ -1,11 +1,11 @@
 Alerts by ID
 ============
 
-.. autofunction:: nwsapy.get_alert_by_id
+.. autofunction:: nwsapy.nwsapy.get_alert_by_id
 
 | 
 
-.. autoclass:: alerts.AlertById
+.. autoclass:: nwsapy.alerts.AlertById
 	:inherited-members:
 	:members:
 

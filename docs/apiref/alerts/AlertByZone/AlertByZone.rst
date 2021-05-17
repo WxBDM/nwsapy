@@ -1,11 +1,11 @@
 Alerts by Zone
 ==============
 
-.. autofunction:: nwsapy.get_alert_by_zone
+.. autofunction:: nwsapy.nwsapy.get_alert_by_zone
 
 | 
 
-.. autoclass:: alerts.AlertByZone
+.. autoclass:: nwsapy.alerts.AlertByZone
 	:inherited-members:
 	:members:
 

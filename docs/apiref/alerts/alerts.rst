@@ -17,25 +17,25 @@ API URL Path
 
 The following table shows all alert-related NWSAPy functions are and what the equivalent API URL path it is.
 
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| NWSAPy Function                             | Equivalent NWS API path            | Associated Alert Object             |
-+=============================================+====================================+=====================================+
-| :meth:`nwsapy.get_all_alerts()`             | ``/alerts``                        | :class:`alerts.AllAlerts`           |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_active_alerts()`          | ``/alerts/active``                 | :class:`alerts.ActiveAlerts`        |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_types()`            | ``/alerts/types``                  | :class:`alerts.AlertTypes`          |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_by_id()`            | ``/alerts/{id}``                   | :class:`alerts.AlertById`           |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_count()`            | ``/alerts/active/count``           | :class:`alerts.AlertByCount`        |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_by_zone()`          | ``/alerts/active/zone/{zoneId}``   | :class:`alerts.AlertByZone`         |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_by_area()`          | ``/alerts/active/area/{area}``     | :class:`alerts.AlertByArea`         |
-+---------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.get_alert_by_marine_region()` | ``/alerts/active/region/{region}`` | :class:`alerts.AlertByMarineRegion` |
-+---------------------------------------------+------------------------------------+-------------------------------------+
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| NWSAPy Method                                      | Equivalent NWS API path            | Associated Alert Object             |
++====================================================+====================================+=====================================+
+| :meth:`nwsapy.nwsapy.get_all_alerts()`             | ``/alerts``                        | :class:`alerts.AllAlerts`           |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_active_alerts()`          | ``/alerts/active``                 | :class:`alerts.ActiveAlerts`        |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_types()`            | ``/alerts/types``                  | :class:`alerts.AlertTypes`          |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_by_id()`            | ``/alerts/{id}``                   | :class:`alerts.AlertById`           |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_count()`            | ``/alerts/active/count``           | :class:`alerts.AlertByCount`        |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_by_zone()`          | ``/alerts/active/zone/{zoneId}``   | :class:`alerts.AlertByZone`         |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_by_area()`          | ``/alerts/active/area/{area}``     | :class:`alerts.AlertByArea`         |
++----------------------------------------------------+------------------------------------+-------------------------------------+
+| :meth:`nwsapy.nwsapy.get_alert_by_marine_region()` | ``/alerts/active/region/{region}`` | :class:`alerts.AlertByMarineRegion` |
++----------------------------------------------------+------------------------------------+-------------------------------------+
 
 For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
 
@@ -51,7 +51,7 @@ Let's suppose we're looking to see if a certain city has some kind of alert issu
 
 .. code-block:: python
 
-	import nwsapy
+	from nwsapy import nwsapy
 	from shapely.geometry import Point
 
 	# Lat/Lon for Arthur, NE.
@@ -268,6 +268,13 @@ When developing, you may encounter a ``DataValidationError``. This error states 
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
 	| Extreme Cold Warning                   | High Wind Warning            | Small Craft Advisory For Hazardous Seas | Winter Weather Advisory               |
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
+
+Alerts API Reference
+--------------------
+
+.. autoclass:: nwsapy.nwsapy
+	:noindex:
+	:members:
 
 .. toctree::
 	:hidden:

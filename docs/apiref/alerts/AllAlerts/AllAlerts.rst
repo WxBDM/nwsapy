@@ -1,11 +1,11 @@
 All Alerts
 ==========
 
-.. autofunction:: nwsapy.get_all_alerts
+.. autofunction:: nwsapy.nwsapy.get_all_alerts
 
 | 
 
-.. autoclass:: alerts.AllAlerts
+.. autoclass:: nwsapy.alerts.AllAlerts
 	:inherited-members:
 	:members:
 

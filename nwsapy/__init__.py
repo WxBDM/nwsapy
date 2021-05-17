@@ -1,1 +1,3 @@
-from .nwsapy import *
+from nwsapy.nwsapy import nwsapy
+nwsapy = nwsapy()
+

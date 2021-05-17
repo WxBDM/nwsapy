@@ -7,11 +7,11 @@
 NWSAPy: An Object Oriented Approach to the NWS API
 ==================================================
 
-NWSAPy is designed to streamline the process of retreiving information from the National Weather Service API. It fetches (GET) then organizes the data in an object-oriented manner. For example, if we wanted to show the headline for all of the current severe thunderstorm warnings:
+NWSAPy (APy, for short) is designed to streamline the process of retreiving information from the National Weather Service API. It fetches (GET) then organizes the data in an object-oriented manner. For example, if we wanted to show the headline for all of the current severe thunderstorm warnings:
 
 .. code-block:: python
 
-	import nwsapy
+	from nwsapy import nwsapy
 
 	active_alerts = nwsapy.get_active_alerts()
 	tstorms = active_alerts.filter_by("Severe Thunderstorm Warning")
@@ -39,9 +39,20 @@ Advantages of using NWSAPy
 ==========================
 - **Clean and Simplistic Code** - The syntax is very english-like.
 - **No worries about JSON**. NWSAPy takes care of anything JSON-related, including formats (GeoJSON, JSON-LD, etc).
+- **No worries about URLs**. NWSAPy also takes care of handling request URL's
 - **404 Error Minimization.** This is handled through data validation checks, as well as handling URL construction.
 - **Response errors are handled.** Response errors are handled appropriately.
 - **Consistency matters.** Even if the response doesn't have a specific attribute, NWSAPy makes sure *something* exists so your code doesn't break.
+
+Dependencies
+============
+
+NWSAPy has minimal dependecies:
+
+- shapely
+- pandas
+- numpy
+- requests
 
 Contact
 =======

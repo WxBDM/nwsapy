@@ -1,11 +1,11 @@
 Alerts By Marine Region
 =======================
 
-.. autofunction:: nwsapy.get_alert_by_marine_region
+.. autofunction:: nwsapy.nwsapy.get_alert_by_marine_region
 
 | 
 
-.. autoclass:: alerts.AlertByMarineRegion
+.. autoclass:: nwsapy.alerts.AlertByMarineRegion
 	:inherited-members:
 	:members:
 
