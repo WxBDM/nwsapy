@@ -184,7 +184,7 @@ class BaseAlert(_AlertIterator):
 
         Returns
         -------
-        list
+        self
             A collection of the filtered alert objects based upon the parameter.
 
         """
