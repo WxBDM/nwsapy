@@ -1,7 +1,8 @@
 Alert by Area: Count
 ====================
 
-.. automethod:: alerts.AlertByArea.count
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByArea.count
 	:noindex:
 
 **Examples**

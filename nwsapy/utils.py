@@ -12,9 +12,27 @@ def request(url, headers):
         response = requests.get(url, headers = headers)
         response.raise_for_status()
     except HTTPError:
-        query = response.json()
-        query.update({'event' : 'error'})  # this is added to be more flush with the code.
-        error_obj = type("error", (), query)
+        # Possible error message: requests.exceptions.HTTPError: 503 Server Error:
+        #   Service Unavailable for url: https://api.weather.gov/alerts/active
+        if response.status_code == 503:
+            error_obj = type('error', (), {'event' : 'error',
+                                           'status_code' : 503,
+                                           'description' : 'Service unavailable',
+                                           'headers' : response.headers
+                                           }
+                             )
+        elif response.status_code == 404:
+            error_obj = type('error', (), {'event' : 'error',
+                                           'status_code' : 404,
+                                           'description' : 'Not found',
+                                           'headers' : response.headers
+                                           }
+                             )
+        else:
+            query = response.json()
+            query.update({'event' : 'error'})  # this is added to be more flush with the code.
+            error_obj = type("error", (), query)
+
         return error_obj()
     except Exception as err:
         raise Exception(f'Other error occurred: {err}')

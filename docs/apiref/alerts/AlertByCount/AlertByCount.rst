@@ -1,7 +1,8 @@
 Alert Count
 ===========
 
-.. autofunction:: nwsapy.nwsapy.get_alert_count
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_count
 
 |
 

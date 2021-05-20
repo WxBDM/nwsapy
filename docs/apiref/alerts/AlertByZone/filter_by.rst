@@ -1,7 +1,8 @@
 Alert by Marine Region: Filter By
 =================================
 
-.. automethod:: alerts.AlertByMarineRegion.filter_by
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByMarineRegion.filter_by
 	:noindex:
 
 **Examples**

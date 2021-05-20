@@ -1,7 +1,8 @@
 Alerts by ID
 ============
 
-.. autofunction:: nwsapy.nwsapy.get_alert_by_id
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_by_id
 
 | 
 

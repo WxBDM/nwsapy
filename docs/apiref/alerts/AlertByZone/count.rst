@@ -1,7 +1,8 @@
 Alert by Marine Region:  Count
 ==============================
 
-.. automethod:: alerts.AlertByMarineRegion.count
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByMarineRegion.count
 	:noindex:
 
 **Examples**

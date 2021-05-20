@@ -1,5 +1,6 @@
 Alert by Zone:  Count
 ==============================
 
-.. automethod:: alerts.AlertByZone.count
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByZone.count
 	:noindex:

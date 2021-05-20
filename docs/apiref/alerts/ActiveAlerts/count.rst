@@ -1,7 +1,8 @@
 Active Alerts: Count
 ====================
 
-.. automethod:: alerts.ActiveAlerts.count
+.. currentmodule:: nwsapy.alerts
+.. automethod:: ActiveAlerts.count
 	:noindex:
 
 **Examples**

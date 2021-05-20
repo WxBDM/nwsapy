@@ -1,5 +1,6 @@
 Alert Count: Filter Zones
 ==============================
 
-.. automethod:: alerts.AlertByCount.filter_zones
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByCount.filter_zones
 	:noindex:

@@ -1,7 +1,8 @@
 All Alerts
 ==========
 
-.. autofunction:: nwsapy.nwsapy.get_all_alerts
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_all_alerts
 
 | 
 

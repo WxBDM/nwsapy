@@ -1,7 +1,8 @@
 All Alerts: Filter By
 =====================
 
-.. automethod:: alerts.AllAlerts.filter_by
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AllAlerts.filter_by
 	:noindex:
 
 **Examples**

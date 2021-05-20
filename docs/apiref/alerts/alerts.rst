@@ -17,27 +17,29 @@ API URL Path
 
 The following table shows all alert-related NWSAPy functions are and what the equivalent API URL path it is.
 
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| NWSAPy Method                                      | Equivalent NWS API path            | Associated Alert Object             |
-+====================================================+====================================+=====================================+
-| :meth:`nwsapy.nwsapy.get_all_alerts()`             | ``/alerts``                        | :class:`alerts.AllAlerts`           |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_active_alerts()`          | ``/alerts/active``                 | :class:`alerts.ActiveAlerts`        |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_types()`            | ``/alerts/types``                  | :class:`alerts.AlertTypes`          |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_by_id()`            | ``/alerts/{id}``                   | :class:`alerts.AlertById`           |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_count()`            | ``/alerts/active/count``           | :class:`alerts.AlertByCount`        |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_by_zone()`          | ``/alerts/active/zone/{zoneId}``   | :class:`alerts.AlertByZone`         |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_by_area()`          | ``/alerts/active/area/{area}``     | :class:`alerts.AlertByArea`         |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
-| :meth:`nwsapy.nwsapy.get_alert_by_marine_region()` | ``/alerts/active/region/{region}`` | :class:`alerts.AlertByMarineRegion` |
-+----------------------------------------------------+------------------------------------+-------------------------------------+
+.. module:: nwsapy
 
-For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| NWSAPy Method                                      | Associated Alert Object             | Description                               |
++====================================================+=====================================+===========================================+
+| :meth:`nwsapy.get_all_alerts()`                    | :class:`alerts.AllAlerts`           | Retrieves all alerts.                     |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_active_alerts()`                 | :class:`alerts.ActiveAlerts`        | Retrieves active alerts.                  |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_types()`                   | :class:`alerts.AlertTypes`          | Retrieves types of alerts.                |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_by_id()`                   | :class:`alerts.AlertById`           | Retrieves alerts by ID.                   |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_count()`                   | :class:`alerts.AlertByCount`        | Retrieves the number of alerts.           |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_by_zone()`                 | :class:`alerts.AlertByZone`         | Retrieves alerts by a zone.               |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_by_area()`                 | :class:`alerts.AlertByArea`         | Retrieves alerts by an area (land or sea).|
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+| :meth:`nwsapy.get_alert_by_marine_region()`        | :class:`alerts.AlertByMarineRegion` | Retrieves alerts by marine region.        |
++----------------------------------------------------+-------------------------------------+-------------------------------------------+
+
+For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
 
 
 Examples Using the Alerts
@@ -268,13 +270,6 @@ When developing, you may encounter a ``DataValidationError``. This error states 
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
 	| Extreme Cold Warning                   | High Wind Warning            | Small Craft Advisory For Hazardous Seas | Winter Weather Advisory               |
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-
-Alerts API Reference
---------------------
-
-.. autoclass:: nwsapy.nwsapy
-	:noindex:
-	:members:
 
 .. toctree::
 	:hidden:

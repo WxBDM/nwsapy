@@ -1,7 +1,8 @@
 Alerts by Area
 ==============
 
-.. autofunction:: nwsapy.nwsapy.get_alert_by_area
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_by_area
 
 | 
 

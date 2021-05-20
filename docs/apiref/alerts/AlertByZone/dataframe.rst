@@ -1,7 +1,8 @@
 Alert by Marine Region: To Dataframe
 ====================================
 
-.. automethod:: alerts.AlertByMarineRegion.to_dataframe
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByMarineRegion.to_dataframe
 	:noindex:
 
 **Example**

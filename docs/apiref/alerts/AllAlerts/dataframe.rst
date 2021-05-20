@@ -1,7 +1,8 @@
 All Alerts: To Dataframe
 ========================
 
-.. automethod:: alerts.AllAlerts.to_dataframe
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AllAlerts.to_dataframe
 	:noindex:
 
 **Example**

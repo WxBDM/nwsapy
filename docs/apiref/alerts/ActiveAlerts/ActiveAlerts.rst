@@ -1,7 +1,8 @@
 Active Alerts
 =============
 
-.. autofunction:: nwsapy.nwsapy.get_active_alerts
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_active_alerts
 
 | 
 

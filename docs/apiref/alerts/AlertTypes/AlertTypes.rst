@@ -1,7 +1,8 @@
 Alert Types
 ===========
 
-.. autofunction:: nwsapy.nwsapy.get_alert_types
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_types
 
 |
 

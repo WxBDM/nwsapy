@@ -1,7 +1,8 @@
 Alert by Area: To Dataframe
 ===========================
 
-.. automethod:: alerts.AlertByArea.to_dataframe
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByArea.to_dataframe
 	:noindex:
 
 **Example**

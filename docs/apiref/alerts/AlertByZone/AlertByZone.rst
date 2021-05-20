@@ -1,7 +1,8 @@
 Alerts by Zone
 ==============
 
-.. autofunction:: nwsapy.nwsapy.get_alert_by_zone
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_by_zone
 
 | 
 

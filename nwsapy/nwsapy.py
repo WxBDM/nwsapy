@@ -6,12 +6,13 @@ Radar, Products, etc).
 """
 from typing import Union
 import nwsapy.alerts as alerts
+import nwsapy.glossary as glossary
 from nwsapy.errors import ParameterTypeError
 
 # needed: https://api.weather.gov/openapi.json
 
 
-class nwsapy:
+class NWSAPy:
 
     _app = None
     _contact = None
@@ -182,4 +183,15 @@ class nwsapy:
         """
         self._check_user_agent()
         return alerts.AlertByZone(zone_id, self._user_agent_to_d)
+
+    def get_glossary(self):
+        """Returns the AMS glossary.
+
+        Returns
+        -------
+        :class:`glossary.Glossary`
+            An object containing the entire AMS glossary.
+        """
+        self._check_user_agent()
+        return glossary.Glossary(self._user_agent_to_d)
 

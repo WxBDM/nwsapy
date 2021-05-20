@@ -1,7 +1,8 @@
 Alerts By Marine Region
 =======================
 
-.. autofunction:: nwsapy.nwsapy.get_alert_by_marine_region
+.. currentmodule:: nwsapy
+.. automethod:: nwsapy.get_alert_by_marine_region
 
 | 
 

@@ -1,7 +1,8 @@
 Alert by Area: Filter By
 ========================
 
-.. automethod:: alerts.AlertByArea.filter_by
+.. currentmodule:: nwsapy.alerts
+.. automethod:: AlertByArea.filter_by
 	:noindex:
 
 **Examples**
