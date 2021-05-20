@@ -17,10 +17,12 @@ from dataclasses import dataclass
 from types import MethodType
 from typing import Union
 import collections
+import copy
 
 from shapely.geometry import Point, Polygon, MultiPoint
 from datetime import datetime
 import pandas as pd
+import pytz
 import numpy as np
 import requests
 
@@ -135,6 +137,9 @@ class _AlertIterator:
         """Allows for alerts object to be directly indexable."""
         return self.alerts[index]
 
+    def __len__(self):
+        return len(self.alerts)
+
 
 class BaseAlert(_AlertIterator):
 
@@ -198,7 +203,9 @@ class BaseAlert(_AlertIterator):
         filtered_alerts = [alert for type_of_alert in alert_type for alert in self.alerts
                            if type_of_alert.title() == alert.event]
 
-        return filtered_alerts
+        new_alert_obj = copy.deepcopy(self)
+        new_alert_obj.alerts = filtered_alerts
+        return new_alert_obj
 
     def count(self, alert_type: Union[str, list]) -> Union[int, list]:
         r"""A method to give you the number of alerts of a specific type that are active.
@@ -254,6 +261,27 @@ class BaseAlert(_AlertIterator):
         df = df.fillna(value=np.nan)
         return df
 
+    def as_utc_time(self):
+        """Sets the object's date time objects to UTC time."""
+
+        new_alert_obj = copy.deepcopy(self)
+        utc = pytz.timezone("UTC")
+
+        # convert it to UTC from local time.
+        for index, alert in enumerate(self.alerts):  # future update: clean this up. too many if's
+            if not isinstance(alert.effective, type(None)):
+                new_alert_obj[index].effective = alert.effective.astimezone(utc)
+            if not isinstance(alert.sent, type(None)):
+                new_alert_obj[index].sent = alert.sent.astimezone(utc)
+            if not isinstance(alert.onset, type(None)):
+                new_alert_obj[index].onset = alert.onset.astimezone(utc)
+            if not isinstance(alert.expires, type(None)):
+                new_alert_obj[index].expires = alert.expires.astimezone(utc)
+            if not isinstance(alert.ends, type(None)):
+                new_alert_obj[index].ends = alert.ends.astimezone(utc)
+
+        return new_alert_obj
+
 
 @dataclass
 class ActiveAlerts(BaseAlert):
@@ -279,6 +307,33 @@ class ActiveAlerts(BaseAlert):
     """
 
     def __init__(self, user_agent):
+
+        # Update for 0.2.0: allow users to input values to modify the URL. Lots of checking!
+
+        # active = boolean
+        # start_time = datetime object TO 2021-05-19T10:45:00-05:00 (https://en.m.wikipedia.org/wiki/ISO_8601#Durations)
+        # end_time = datetime object TO ISO duration (above)
+        # status = string [actual, exercise, system, test, draft]
+        # message_type = string [alert, update, cancel]
+        # event = string [Valid NWS alert products, see table]
+        # code = string (no clue what this is)
+        # region_type = string [land or marine], This parameter is incompatible with the following parameters:
+        #       area, point, region, zone
+        # point = string (NOTE: must be 38,-99 WATCH SPACES!, truncate to 4 decimal places).
+        #       maybe make a shapely point? OR could create a NWSAPy point. This parameter is incompatible with the
+        #       following parameters: area, region, region_type, zone
+        # region = string [Valid marine regions, see table] This parameter is incompatible with the following
+        #       parameters: area, point, region_type, zone
+        # area = string [Valid areas, see table] This parameter is incompatible with the following parameters:
+        #       point, region, region_type, zone
+        # zone = string [Don't have a table for this, but something like ABC001] This parameter is incompatible with
+        #       the following parameters: area, point, region, region_type
+        # urgency = string  [immediate, expected, future, past, unknown]
+        # severity = string [extreme, severe, moderate, minor, unknown]
+        # certainty = string [observed, likely, possible, unlikely, unknown]
+        # limit = integer (how many alerts you want, 0 to ??, look into capping it?)
+        # cursor = what is this I don't even know
+
         response = utils.request("https://api.weather.gov/alerts/active", user_agent)
 
         if isinstance(response, requests.models.Response):
