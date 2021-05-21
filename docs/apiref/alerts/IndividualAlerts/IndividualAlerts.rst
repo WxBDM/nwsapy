@@ -1,7 +1,33 @@
 Individual Alerts
 =================
 
-When an alerts object is given to you, there's an internal list (can be called by ``.alerts``) containing the individual alerts. Each of these indivual alerts are an object. Thus, ``.alerts`` is a list of individual alert objects. The type is based upon the type of alert it is. For example, an alert for a Frost Advisory would be a ``frostadvisory`` object. Similarily, a tornado warning alert object would be type ``tornadowarning``.
+When an alerts object is given to you, there's an internal list (can be called by ``.alerts``) containing the individual alerts. Each of these indivual alerts are objects. However, the type is based upon the type of alert it is. For example, an alert for a Frost Advisory would be a ``frostadvisory`` object. Similarily, a tornado warning alert object would be type ``tornadowarning``.
+
+Individual Alerts Are...
+------------------------
+
+- Comparable by either ``effective``, ``expires``, ``onset``, ``sent``, or ``ends``
+
+>>> alerts.severethunderstormwarning > alerts.floodwarning
+True
+>>> alerts.severethunderstormwarning.sent_before(alerts.floodwarning)
+True
+
+.. note::
+	By default, when using comparison operators, it compares the ``.sent`` attribute. You can change this by calling :meth:`set_time_comparison`
+
+- Hashable
+
+>>> hash(alerts.tornadowarning)
+2453993799464965449
+
+- When printed, it will print the headline:
+
+>>> print(alerts.smallcraftadvisory)
+Small Craft Advisory issued May 20 at 9:34PM EDT until May 21 at 5:00PM EDT by NWS Wakefield VA
+
+How it Works
+------------
 
 Each alert property is stored as an attribute. So, for example, let's say that we are looking at the following special marine warning in the API web page (note that a lot of information is removed for explaination purposes). We would expect to see something like this:
 
@@ -46,7 +72,7 @@ Each alert property is stored as an attribute. So, for example, let's say that w
 	    }
 	}
 
-When created, this specific alert would have the following attributes from ``geometry``:
+When the individual alert is created, the object would have the following attributes from ``geometry``:
 
 	| ``.polygon``
 	| ``.points``
@@ -109,6 +135,7 @@ Which, in turn, would translate to the following attributes:
 	| ``.instance``
 	| ``.event``
 
+
 Individual Alert API Reference
 ------------------------------
 
@@ -148,81 +175,121 @@ Individual Alert
 
    A dynamically created alert, with ``<Alert Event Name>`` being the name of the alert.
    
-   For example, if the event is a tornado warning, the name of the dynamically created alert would be ``alerts.tornadowarning``. Similarily, for a small craft advisory, it would be ``alerts.smallcraftadvisory``, and so forth.
+   .. important::
+  		If you are comparing 2 indvidual alerts, (i.e. ``alert.tornadowarning == alert.severethunderstormwarning``), you will be comparing the ``sent`` attribute by default. To change this to either compare effective, ends, onset, or expire, call :meth:`set_time_comparison`.
    
-   	.. attribute:: affectedZones
-		:type: str
+   For example, if the event is a tornado warning, the name of the dynamically created alert would be ``alerts.tornadowarning``. Similarily, for a small craft advisory, it would be ``alerts.smallcraftadvisory``, and so forth.
+		
+   
+	.. attribute:: affectedZones
+		:type: list: str
+		
+		A list of affected Zones by ID.
 	
 	.. attribute:: areaDesc
 		:type: str
+		
+		A description of the area that the alert covers.
 	
 	.. attribute:: category
 		:type: str
+		
+		The category in which the alert falls under.
 	
 	.. attribute:: description
 		:type: str
+		
+		Describes the alert.
 	
 	.. attribute:: effective
 		:type: datetime.datetime
+		
+		When the alert is effective (local timezone)
 	
 	.. attribute:: ends
-		:type: datetime.datetime
-	
+		:type: datetime.datetime or None
+		
+		When the alert ends (local timezone).
+			
 	.. attribute:: event
 		:type: str
-	
-	.. attribute:: effective
-		:type: datetime.datetime
-		:noindex:
+		
+		The event of which this alert is (used as the object type)
 	
 	.. attribute:: geocode
 		:type: dict
 	
 	.. attribute:: headline
 		:type: str
+		
+		The headline of the alert.
 	
 	.. attribute:: id
 		:type: str
+		
+		The associated ID of the alert.
 	
 	.. attribute:: instruction
 		:type: str
+		
+		The "call to action" of the alerrt.
 	
 	.. attribute:: messageType
 		:type: str
+		
+		What kind of message the alert is (update, warning, etc)
 	
 	.. attribute:: onset
 		:type: datetime.datetime
+		
+		When the alert was onset (local time).
 	
 	.. attribute:: parameters
 		:type: dict
 	
 	.. attribute:: points
-		:type: list, containing shapely.Point
+		:type: list, containing shapely.Point or None
+		
+		Points where the alert lies (lat/lon)
 	
 	.. attribute:: points_collection
-		:type: shapely.MultiPoint
+		:type: shapely.MultiPoint or None
+		
+		A collection of the points attribute
 	
 	.. attribute:: polygon
-		:type: shapely.Polygon
+		:type: shapely.Polygon or None
+		
+		The polygon where the alert lies.
 	
 	.. attribute:: references
-		:type: dict
+		:type: list
 	
 	.. attribute:: sender
 		:type: str
+		
+		Who sent the alert.
 	
 	.. attribute:: senderName
 		:type: str
+		
+		Which NWS office sent the alert.
 	
 	.. attribute:: sent
 		:type: datetime.datetime
+		
+		When the alert was sent (local time)
 	
 	.. attribute:: series
-		:type: str
+		:type: pandas.Series
+		
+		A pandas series with all attributes of this object
 	
 	.. attribute:: severity
 		:type: str
-	
+		
+		How severe the alert is.
+
 	.. attribute:: status
 		:type: str
 	
@@ -293,6 +360,37 @@ Individual Alert
 		:type other: alerts.<Alert Event Name>
 		:rtype: bool - ``True`` if this alert will expire after other. ``False`` otherwise.
    
+	.. py:method:: ends_before(other)
+
+		Compares ``self.ends`` to determine if this alert will end before other.
+
+		:param other: A different alerts.<Alert Event Name> object.
+		:type other: alerts.<Alert Event Name>
+		:rtype: bool - ``True`` if this alert will end before other. ``False`` otherwise.
+		
+		.. caution::
+			This value could be ``None``, so you could be comparing ``None``.
+	
+	.. py:method:: ends_after(other)
+
+		Compares ``self.ends`` to determine if this alert will end after other.
+	
+		:param other: A different alerts.<Alert Event Name> object.
+		:type other: alerts.<Alert Event Name>
+		:rtype: bool - ``True`` if this alert will end after other. ``False`` otherwise.
+		
+		.. caution::
+			This value could be ``None``, so you could be comparing ``None``.
+	
+	.. py:method:: set_time_comparison(which)
+
+		Sets which datetime object to compare to. Defaults to ``sent``.
+	
+		:param which: A string either ``effective``, ``sent``, ``onset``, ``expires``, or ``ends``
+		:type which: string
+		
+		.. note::
+			If you attempt to call ``x_before`` or ``x_after``, it will not compare this value. This will only compare values with equality operators (``>``, ``<``, ``==``, ``!=``, ``<=``,``>=``)
 
 .. toctree::
 	:hidden:

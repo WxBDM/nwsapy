@@ -42,6 +42,28 @@ The following table shows all alert-related NWSAPy functions are and what the eq
 For example, if you would like to retrieve the alert types from ``/alerts/types``, you would call :meth:`nwsapy.get_alert_types()`. This would then return an object containing the information from the API in an :class:`alerts.AlertTypes` object. See Individual Alerts for more information.
 
 
+All Alert objects are...
+------------------------
+
+- Iterable
+
+.. code-block:: python
+
+	all_alerts = nwsapy.get_all_alerts()
+	
+	for alert in all_alerts:
+		print(alert.headline)
+
+- Indexable
+
+.. code-block:: python
+
+	all_alerts = nwsapy.get_all_alerts()
+	
+	print(all_alerts[1])
+	print(all_alerts[-1])
+
+
 Examples Using the Alerts
 -------------------------
 
@@ -115,166 +137,12 @@ Gives the following result:
 
 >>> NWS Goodland KS has sent out a severe warning before NWS Miami FL has!
 
-DataValidationError Tables
---------------------------
-
-When developing, you may encounter a ``DataValidationError``. This error states that the data that is being read in is not a valid data point in the API. This section provides a reference of what data is valid based upon the function that is called. The error, when raised, should provide a link to the appropriate table for easy referencing.
-
-.. _alerts_by_area_table_validation:
-.. table:: Alerts by Area 
-
-	+----------------------------------------------------------------------------------------------------------------------------+
-	|                                        Function: :meth:`nwsapy.get_alert_by_area()`                                        |
-	+================+======================+================+================+================+=================================+
-	| **Valid Data** | **Description**      | **Valid Data** | **Description**| **Valid Data** | **Description**                 |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| AL             | Alabama              | MA             | Massachussetts | TX             | Texas                           |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| AK             | Alaska               | MI             | Michigan       | UT             | Utah                            |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| AS             | American Samoa       | MN             | Minnesota      | VT             | Vermont                         |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| AR             | Arkansas             | MS             | Mississippi    | VI             | Virgin Islands                  |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| AZ             | Arizona              | MO             | Missouri       | VA             | Virginia                        |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| CA             | California           | MT             | Montana        | WA             | Washington                      |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| CO             | Colorado             | NE             | Nebraska       | WV             | West Virginia                   |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| CT             | Connecticut          | NV             | Nevada         | WI             | Wisconsin                       |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| DE             | Deleware             | NH             | New Hampshire  | WY             | Wyoming                         |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| DC             | District of Columbia | NJ             | New Jersey     | PZ             | Eastern North Pacific Ocean     |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| FL             | Florida              | NM             | New Mexico     | PK             | North Pacific Ocean Near Alaska |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| GA             | Georiga              | NY             | New York       | PH             | Central Pacific Ocean           |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| GU             | Guam                 | NC             | North Carolina | PS             | South Central Pacific Ocean     |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| HI             | Hawaii               | ND             | North Dakota   | PM             | Western Pacific Ocean           |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| ID             | Idaho                | OH             | Ohio           | AN             | Northwest North Atlantic Ocean  |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| IL             | Illinois             | OK             | Oklahoma       | AM             | West North Atlantic Ocean       |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| IN             | Indiana              | OR             | Oregon         | GM             | Gulf of Mexico                  |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| IA             | Iowa                 | PA             | Pennsylvania   | LS             | Lake Superior                   |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| KS             | Kansas               | PR             | Puerto Rico    | LM             | Lake Michigan                   |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| KY             | Kentucky             | RI             | Rhode Island   | LH             | Lake Huron                      |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| LA             | Louisiana            | SC             | South Carolina | LC             | Lake St. Clair                  |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| ME             | Maine                | SD             | South Dakota   | LE             | Lake Erie                       |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-	| MD             | Maryland             | TN             | Tennessee      | LO             | Lake Ontario                    |
-	+----------------+----------------------+----------------+----------------+----------------+---------------------------------+
-
-|
-
-.. _alerts_by_marine_table_validation:
-.. table:: Alerts by Marine Region
-
-	+-------------------------------------------------------+
-	| Function: :meth:`nwsapy.get_alert_by_marine_region()` |
-	+======================+================================+
-	| **Valid Data**       | **Description**                |
-	+----------------------+--------------------------------+
-	| AL                   | Alaska Region                  |
-	+----------------------+--------------------------------+
-	| AT                   | Atlantic Region                |
-	+----------------------+--------------------------------+
-	| GL                   | Great Lakes                    |
-	+----------------------+--------------------------------+
-	| GM                   | Gulf of Mexico                 |
-	+----------------------+--------------------------------+
-	| PA                   | Pacific Region                 |
-	+----------------------+--------------------------------+
-	| PI                   | Pacific Islands                |
-	+----------------------+--------------------------------+
-
-|
-
-.. _valid_nws_alert_products:
-.. table:: Valid Alert Products
-
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Valid NWS Alert Products: used when ``.count()`` and ``.filter_by()`` are called.                                                                       |
-	+========================================+==============================+=========================================+=======================================+
-	| 911 Telephone Outage Emergency         | Extreme Cold Watch           | High Wind Watch                         | Small Craft Advisory For Rough Bar    |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Administrative Message                 | Extreme Fire Danger          | Hurricane Force Wind Warning            | Small Craft Advisory For Winds        |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Air Quality Alert                      | Extreme Wind Warning         | Hurricane Force Wind Watch              | Small Stream Flood Advisory           |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Air Stagnation Advisory                | Fire Warning                 | Hurricane Local Statement               | Snow Squall Warning                   |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Arroyo And Small Stream Flood Advisory | Fire Weather Watch           | Hurricane Warning                       | Special Marine Warning                |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Ashfall Advisory                       | Flash Flood Statement        | Hurricane Watch                         | Special Weather Statement             |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Ashfall Warning                        | Flash Flood Warning          | Hydrologic Advisory                     | Storm Surge Warning                   |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Avalanche Advisory                     | Flash Flood Watch            | Hydrologic Outlook                      | Storm Surge Watch                     |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Avalanche Warning                      | Flood Advisory               | Ice Storm Warning                       | Storm Warning                         |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Avalanche Watch                        | Flood Statement              | Lake Effect Snow Advisory               | Storm Watch                           |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Beach Hazards Statement                | Flood Warning                | Lake Effect Snow Warning                | Test                                  |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Blizzard Warning                       | Flood Watch                  | Lake Effect Snow Watch                  | Tornado Warning                       |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Blizzard Watch                         | Freeze Warning               | Lake Wind Advisory                      | Tornado Watch                         |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Blowing Dust Advisory                  | Freeze Watch                 | Lakeshore Flood Advisory                | Tropical Depression Local Statement   |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Blowing Dust Warning                   | Freezing Fog Advisory        | Lakeshore Flood Statement               | Tropical Storm Local Statement        |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Brisk Wind Advisory                    | Freezing Rain Advisory       | Lakeshore Flood Warning                 | Tropical Storm Warning                |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Child Abduction Emergency              | Freezing Spray Advisory      | Lakeshore Flood Watch                   | Tropical Storm Watch                  |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Civil Danger Warning                   | Frost Advisory               | Law Enforcement Warning                 | Tsunami Advisory                      |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Civil Emergency Message                | Gale Warning                 | Local Area Emergency                    | Tsunami Warning                       |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Coastal Flood Advisory                 | Gale Watch                   | Low Water Advisory                      | Tsunami Watch                         |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Coastal Flood Statement                | Hard Freeze Warning          | Marine Weather Statement                | Typhoon Local Statement               |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Coastal Flood Warning                  | Hard Freeze Watch            | Nuclear Power Plant Warning             | Typhoon Warning                       |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Coastal Flood Watch                    | Hazardous Materials Warning  | Radiological Hazard Warning             | Typhoon Watch                         |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Dense Fog Advisory                     | Hazardous Seas Warning       | Red Flag Warning                        | Urban And Small Stream Flood Advisory |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Dense Smoke Advisory                   | Hazardous Seas Watch         | Rip Current Statement                   | Volcano Warning                       |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Dust Advisory                          | Hazardous Weather Outlook    | Severe Thunderstorm Warning             | Wind Advisory                         |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Dust Storm Warning                     | Heat Advisory                | Severe Thunderstorm Watch               | Wind Chill Advisory                   |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Earthquake Warning                     | Heavy Freezing Spray Warning | Severe Weather Statement                | Wind Chill Warning                    |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Evacuation - Immediate                 | Heavy Freezing Spray Watch   | Shelter In Place Warning                | Wind Chill Watch                      |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Excessive Heat Warning                 | High Surf Advisory           | Short Term Forecast                     | Winter Storm Warning                  |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Excessive Heat Watch                   | High Surf Warning            | Small Craft Advisory                    | Winter Storm Watch                    |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Extreme Cold Warning                   | High Wind Warning            | Small Craft Advisory For Hazardous Seas | Winter Weather Advisory               |
-	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
 
 .. toctree::
 	:hidden:
 	:maxdepth: 1
 	
+	Data Validation Tables <datavalidationtables>
 	Individual Alerts <IndividualAlerts/IndividualAlerts>
 	alerts.AllAlerts <AllAlerts/AllAlerts>
 	alerts.ActiveAlerts <ActiveAlerts/ActiveAlerts>

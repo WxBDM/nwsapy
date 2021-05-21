@@ -34,14 +34,14 @@ The API Reference is a blend of both explainations and pure reference. It's brok
 
 The top-most page (i.e. ``Alerts``, ``Glossary``, ``Gridpoints``, etc) contains explainations on what the module does, what URL's are requested, and any "Data Validation" table. When expanded on the left side, it will show all ``nwsapy`` functions associated with the module. These functions will return an instantiated object, which the methods associated with the object are shown when expanded upon.
 
-Data Validation Tables
-----------------------
+Data Validation
+---------------
 
 If there are any parameters for any ``nwsapy`` method, a data validation table will be provided at the top-most level of the module (i.e. ``Alerts``, ``Glossary``, etc). To simply put, data validation tables give you a way to make sure that your parameters are formatted properly to minimize 404 errors.
 
 .. important::
 
-	If you were to use NWSAPy in an applicatoin that you plan on deploying, you want to ensure that the parameters are formatted properly before calling any ``nwsapy`` functions. Data Validation Errors and Parameter Type Errors should only appear during development.
+	If you were to use NWSAPy in an application that you plan on deploying, you want to ensure that the parameters are formatted properly before calling any ``nwsapy`` functions. Data Validation Errors and Parameter Type Errors should only appear during development.
 
 For example, if we were run the following code:
 
