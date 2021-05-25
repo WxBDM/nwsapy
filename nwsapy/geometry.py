@@ -1,5 +1,38 @@
 import math
 import shapely.geometry as sg
+from nwsapy.errors import ParameterTypeError
+
+
+class Point:
+
+    def __init__(self, lat, lon):
+        lat, lon = self._validate(lat, lon)
+        self.latitude = lat
+        self.longitude = lon
+
+    def __len__(self):
+        return 2
+
+    def __repr__(self):
+        string = f'NWSAPy Point Geometry object. Latitude: {self.latitude} Longitude: {self.longitude}'
+        return string
+
+    def _validate(self, lat, lon):
+        # checks the points and ensures they're float/int. Convert to float and truncate to 4 decimal places.
+        values = [lat, lon]
+
+        for index, val in enumerate(values):
+            valid = (isinstance(val, int), isinstance(val, float))
+
+            if not any(valid):
+                raise ValueError(f"Value: {val} is not float/int. Got: {type(val)}")
+
+            values[index] = float(format(val, ".4f"))
+
+        return values[0], values[1]
+
+
+
 
 
 def check_point_type(pair):

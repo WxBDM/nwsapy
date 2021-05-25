@@ -9,28 +9,28 @@ def request(url, headers):
     # list of URLs: https://www.weather.gov/documentation/services-web-api#/
 
     try:
-        response = requests.get(url, headers = headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
     except HTTPError:
         # Possible error message: requests.exceptions.HTTPError: 503 Server Error:
         #   Service Unavailable for url: https://api.weather.gov/alerts/active
         if response.status_code == 503:
-            error_obj = type('error', (), {'event' : 'error',
-                                           'status_code' : 503,
-                                           'description' : 'Service unavailable',
-                                           'headers' : response.headers
+            error_obj = type('error', (), {'event': 'error',
+                                           'status_code': 503,
+                                           'description': 'Service unavailable',
+                                           'headers': response.headers
                                            }
                              )
         elif response.status_code == 404:
-            error_obj = type('error', (), {'event' : 'error',
-                                           'status_code' : 404,
-                                           'description' : 'Not found',
-                                           'headers' : response.headers
+            error_obj = type('error', (), {'event': 'error',
+                                           'status_code': 404,
+                                           'description': 'Not found',
+                                           'headers': response.headers
                                            }
                              )
         else:
             query = response.json()
-            query.update({'event' : 'error'})  # this is added to be more flush with the code.
+            query.update({'event': 'error'})  # this is added to be more flush with the code.
             error_obj = type("error", (), query)
 
         return error_obj()
@@ -74,3 +74,10 @@ def valid_products():
             'Wind Advisory', 'Wind Chill Advisory', 'Wind Chill Warning', 'Wind Chill Watch', 'Winter Storm Warning',
             'Winter Storm Watch', 'Winter Weather Advisory']
 
+
+def valid_areas():
+    return ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL',
+            'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
+            'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
+            'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS',
+            'LM', 'LH', 'LC', 'LE', 'LO']

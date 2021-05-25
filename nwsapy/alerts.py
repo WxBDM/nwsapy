@@ -15,7 +15,7 @@ You can find the API documentation here: https://www.weather.gov/documentation/s
 """
 from dataclasses import dataclass
 from types import MethodType
-from typing import Union
+from typing import Union, Optional, Dict, Any
 import collections
 import copy
 
@@ -26,7 +26,7 @@ import pytz
 import numpy as np
 import requests
 
-from nwsapy.errors import ParameterTypeError, DataValidationError
+from nwsapy.errors import ParameterTypeError, DataValidationError, ParameterConflict
 import nwsapy.utils as utils
 
 
@@ -48,6 +48,12 @@ class AlertConstructor:
         self._construct_times(alert_dictionary)
         constructed_alert = self._construct_methods(alert_dictionary)
         constructed_alert.series = self._construct_series(alert_dictionary)
+
+        # set the comparison times to start.
+        constructed_alert._time_compare = constructed_alert.sent
+
+        # fix the affected zones so it's only the zoneID.
+        constructed_alert.affectedZones = [zone.split("/")[-1] for zone in constructed_alert.affectedZones]
         return constructed_alert()
 
     def _construct_series(self, alert_dictionary):
@@ -61,21 +67,91 @@ class AlertConstructor:
             alert_dictionary['polygon'] = list(alert_dictionary['polygon'].exterior.coords)
 
         series = pd.Series(alert_dictionary)
-        series = series.drop(labels = ['points_collection'])
+        series = series.drop(labels=['points_collection'])
         return series
 
     def _construct_methods(self, alert_dictionary):
         """Constructs the object's methods and returns it."""
 
         # these methods are ones that are going to be bound to the object.
-        def sent_before(self, other): return self.sent > other.sent
-        def sent_after(self, other): return self.sent < other.sent
-        def effective_before(self, other): return self.effective > other.effective
-        def effective_after(self, other): return self.effective < other.effective
-        def onset_before(self, other): return self.onset > other.onset
-        def onset_after(self, other): return self.onset < other.onset
-        def expires_before(self, other): return self.expires > other.expires
-        def expires_after(self, other): return self.expires < other.expires
+        # Leaving here for backwards compatability.
+        def sent_before(self, other):
+            return self.sent > other.sent
+
+        def sent_after(self, other):
+            return self.sent < other.sent
+
+        def effective_before(self, other):
+            return self.effective > other.effective
+
+        def effective_after(self, other):
+            return self.effective < other.effective
+
+        def onset_before(self, other):
+            return self.onset > other.onset
+
+        def onset_after(self, other):
+            return self.onset < other.onset
+
+        def expires_before(self, other):
+            return self.expires > other.expires
+
+        def expires_after(self, other):
+            return self.expires < other.expires
+
+        def ends_before(self, other):
+            return self.ends > other.ends
+
+        def ends_after(self, other):
+            return self.ends < other.ends
+
+        def set_time_comparison(self, which):  # sets the value to compare the time to for __lt__ etc.
+            which = which.lower()
+            if which not in ['effective', 'sent', 'onset', 'expires', 'ends']:
+                raise DataValidationError(which, "Valid parameters: 'effective', 'sent', 'onset', 'expires', 'ends'")
+
+            if which == 'effective':
+                self._time_compare = self.effective
+            elif which == 'sent':
+                self._time_compare = self.sent
+            elif which == 'onset':
+                self._time_compare = self.onset
+            elif which == 'expires':
+                self._time_compare = self.expires
+            else:
+                self._time_compare = self.expires
+
+        # methods to compare times.
+        def __lt__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.__hash__ < other.__hash__
+
+        def __le__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.__hash__ <= other.__hash__
+
+        def __eq__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.id == other.id
+
+        def __ne__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.__hash__ != other.__hash__
+
+        def __gt__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.__hash__ > other.__hash__
+
+        def __ge__(self, other):
+            if not isinstance(other, type(self)): return NotImplemented
+            return self.__hash__ >= other.__hash__
+
+        # other dunder methods
+        def __repr__(self):
+            return self.headline
+
+        def __hash__(self):
+            return hash((self.id,))
 
         # Create the object and bind the method to it.
         alert = type(alert_dictionary['event'].replace(" ", "").lower(), (), alert_dictionary)
@@ -87,6 +163,17 @@ class AlertConstructor:
         alert.onset_after = MethodType(onset_after, alert)
         alert.expires_before = MethodType(expires_before, alert)
         alert.expires_after = MethodType(expires_after, alert)
+        alert.ends_before = MethodType(ends_before, alert)
+        alert.ends_after = MethodType(ends_after, alert)
+        alert.__lt__ = MethodType(__lt__, alert)
+        alert.__le__ = MethodType(__le__, alert)
+        alert.__eq__ = MethodType(__eq__, alert)
+        alert.__ne__ = MethodType(__ne__, alert)
+        alert.__gt__ = MethodType(__gt__, alert)
+        alert.__ge__ = MethodType(__ge__, alert)
+        alert.__repr__ = MethodType(__repr__, alert)
+        alert.__hash__ = MethodType(__hash__, alert)
+        alert.set_time_comparison = MethodType(set_time_comparison, alert)
 
         return alert  # we're not instantiating the object here. It's in the main construct method.
 
@@ -143,8 +230,7 @@ class _AlertIterator:
 
 class BaseAlert(_AlertIterator):
 
-    @staticmethod
-    def _validate_alert_type(alert_type: Union[str, list]):
+    def _validate_alert_type(self, alert_type: Union[str, list]):
 
         # checks to make sure that the data type is correct and is validated against the various alert types.
 
@@ -161,50 +247,327 @@ class BaseAlert(_AlertIterator):
             if alert.title() not in valid_products:
                 raise DataValidationError(alert)
 
-    def filter_by(self, alert_type: Union[str, list]) -> list:
+    def filter_by(self, alert_id: Optional[Union[str, list[str]]] = None,
+                  certainty: Optional[Union[str, list[str]]] = None,
+                  effective_after: Optional[datetime] = None,
+                  effective_before: Optional[datetime] = None,
+                  ends_after: Optional[datetime] = None,
+                  ends_before: Optional[datetime] = None,
+                  event: Optional[Union[str, list[str]]] = None,
+                  expires_after: Optional[datetime] = None,
+                  expires_before: Optional[datetime] = None,
+                  lat_northern_bound: Optional[Union[float, int]] = None,
+                  lat_southern_bound: Optional[Union[float, int]] = None,
+                  lon_eastern_bound: Optional[Union[float, int]] = None,
+                  lon_western_bound: Optional[Union[float, int]] = None,
+                  onset_after: Optional[datetime] = None,
+                  onset_before: Optional[datetime] = None,
+                  sent_after: Optional[datetime] = None,
+                  sent_before: Optional[datetime] = None,
+                  severity: Optional[Union[str, list[str]]] = None,
+                  status: Optional[Union[str, list[str]]] = None,
+                  urgency: Optional[Union[str, list[str]]] = None) -> object:
         r"""Filters all active alerts based upon the alert type.
-
-        Note: This will return an ordered list of the alert types you input. For example:
-
-        >>> filter_by(['Tornado Warning', 'Tornado Watch'])
-        [alerts.tornadowarning, alerts,tornadowarning, alerts.tornadowatch]
 
         Parameters
         ----------
-        alert_type : str, list
-            The type of alert to be searched. Not case sensitive.
-            Examples: ``"Tornado Warning"``, ``["flood watch", "SmAlL CrAfT wArNiNg"]``
+        event: str or list
+            The event shown on the :ref:`Valid Alert Types<valid_nws_alert_products>` table. If ``None``, this parameter
+            is ignored.
+
+        alert_id: str or list
+            The ID associated with a specific alert, or a list containing alerts IDs. If ``None``, this parameter
+            is ignored.
+
+        lat_northern_bound: float or int
+            The northern-most latitude in which alerts should be filtered by. For example, if 35 is given, it will
+            filter out any alerts that go above 35 latitude. If ``None``, this parameter is ignored. If the attribute
+            is ``None``, the alert will be filtered out.
+
+        lat_southern_bound: float or int
+            The southern-most latitude in which alerts should be filtered by. For example, if 10 is given, it will
+            filter out any alerts that go below 10 latitude. If ``None``, this parameter is ignored. If the attribute
+            is ``None``, the alert will be filtered out.
+
+        lon_western_bound: float or int
+            The western-most longitude in which alerts should be filtered by. For example, if -100 is given, it will
+            filter any alerts that are west of -100 longitude. If ``None``, this parameter is ignored. If the attribute
+            is ``None``, the alert will be filtered out.
+
+        lon_eastern_bound: float or int
+            The eastern-most longitude in which alerts should be filtered by. For example, if -80 is given, it will
+            filter out any alerts that are east of -80 longitude. If ``None``, this parameter is ignored. If the
+            attribute is ``None``, the alert will be filtered out.
+
+        effective_before: datetime
+            Any effective times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        effective_after: datetime
+            Any effective times that are after this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        ends_before: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        ends_after: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        onset_before: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        onset_after: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        sent_before: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        sent_after: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        expires_before: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored.
+
+        expires_after: datetime
+            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
+            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
+            filtered out.
+
+        severity: str or list
+            The severity in which the alert is. Severity is
+
+        status: Optional[Union[str, list[str]]] = None,
+
+        urgency: Optional[Union[str, list[str]]] = None
+
 
         Raises
         ------
         nwsapy.ParameterTypeError
-            If the parameter isn't the correct data type (string).
+            If the parameter isn't the correct data type.
         nwsapy.DataValidationError
             If the alert type isn't a valid National Weather Service alert.
+        nwsapy.ParameterConflict
+            If the parameters have a conflict with one another. Only set one of the following: region_type
+            point region zone area.
 
         Returns
         -------
         self
-            A collection of the filtered alert objects based upon the parameter.
+            A deep copy of the same object, except with the filtered alerts.
 
         """
-        self._validate_alert_type(alert_type)  # validate data
 
-        if isinstance(alert_type, str):
-            alert_type = [alert_type]  # keep it consistent with the logic and just make it into a list.
+        class Params:
+            """Class to hold data types and constraints for checking"""
 
-        # Equivalent list comp logic:
-        # filtered_alerts = []
-        # for alert in self.alerts:
-        #     for type_of_alert in alert_type:
-        #         if type_of_alert == alert.event:
-        #             filtered_alerts.append(alert)
+            def __init__(self, param, expected_dtype, constraints):
+                if param is not None:
+                    if not any([isinstance(param, list), isinstance(param, tuple)]):
+                        self.value = [param]
+                    else:
+                        self.value = param
 
-        filtered_alerts = [alert for type_of_alert in alert_type for alert in self.alerts
-                           if type_of_alert.title() == alert.event]
+                    self.dtype = expected_dtype
+                else:
+                    self.value = None
+                    self.dtype = type(None)
+
+                self.constraints = constraints
+
+            def title(self):
+                if self.value is not None:
+                    self.value = [x.title() for x in self.value]  # convert all to a string.
+
+        # load the parameters into a dictionary and add their associated data type with it.
+        # Note: don't call any string modification methods in initialization, it messes up the tests.
+        utc_now = type(datetime.utcnow())  # serves no purpose other than to get data type.
+        param_d = {
+            'alert_id': Params(alert_id, str, None),  # .id
+            'certainty': Params(certainty, str, ["Observed", "Likely", "Possible", "Unlikely", "Unknown"]),  # certainty
+            'effective_after': Params(effective_after, utc_now, None),  # .effective_after
+            'effective_before': Params(effective_before, utc_now, None),  # .effective_before
+            'ends_after': Params(ends_after, utc_now, None),  # .effective_before
+            'ends_before': Params(ends_before, utc_now, None),  # .effective_before
+            'event': Params(event, str, utils.valid_products()),  # .event
+            'expires_after': Params(expires_after, utc_now, None),  # .expires_after
+            'expires_before': Params(expires_before, utc_now, None),  # .expires_before
+            'lat_northern_bound': Params(lat_northern_bound, [int, float], None),  # .polygon .point .point_collection
+            'lat_southern_bound': Params(lat_southern_bound, [int, float], None),  # .polygon .point .point_collection
+            'lon_eastern_bound': Params(lon_eastern_bound, [int, float], None),  # .polygon .point .point_collection
+            'lon_western_bound': Params(lon_western_bound, [int, float], None),  # .polygon .point .point_collection
+            'onset_after': Params(onset_after, utc_now, None),  # .onset_after
+            'onset_before': Params(onset_before, utc_now, None),  # .onset_before
+            'sent_after': Params(sent_after, utc_now, None),  # .sent_after
+            'sent_before': Params(sent_before, utc_now, None),  # .sent_before
+            'severity': Params(severity, str, ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]),  # .severity
+            'status': Params(status, str, ["Actual", "Exercise", "System", "Test", "Draft"]),  # .status
+            'urgency': Params(urgency, str, ["Immediate", "Expected", "Future", "Past", "Unknown"]),  # .urgency
+        }
+
+        # This checks 3 things:
+        #   1. If there is at least one filter argument supplied.
+        #   2. If the data type of the filter argument is as expected
+        #   3. If the data is validated (is of proper kind)
+        # clean up, it's unfun to read. Yikes!
+        args_supplied = {}  # list of all of the arguments that are supplied.
+        for key in param_d:  # iterate through entire parameter dictionary
+            val = param_d[key]  # set the value (Params object)
+            if not isinstance(val.value, type(None)):  # point 2: check if it's None. If not, move on.
+                args_supplied.update({key: val})  # put it in the argument supplied dictionary.
+
+                for itr in val.value:  # iterate thorugh the list (either 1 or n vals)
+                    if type(val.dtype) == list:  # some of the parameters have 2 possible dtypes, they're in a list.
+                        valid = [isinstance(itr, dtype) for dtype in val.dtype]
+                        if not any(valid):
+                            raise ParameterTypeError(itr, 'int or float')  # just hardcode it for now watch scalability
+                    else:  # otherwise just simply check the data type.
+                        if not isinstance(itr, val.dtype):
+                            raise ParameterTypeError(itr, val.dtype)
+
+                # Point 3
+                if val.constraints is not None:
+                    val.title()
+                    value = val.value  # there could be filters where it's a list, so convert it to a list.
+                    for itr_val in value:
+                        if itr_val not in val.constraints:
+                            raise DataValidationError(value)
+
+        if len(args_supplied) == 0:  # there weren't any arguments supplied, throw an error.
+            raise ParameterTypeError(filter_by_test=True)
+
+        # There's ways to do this, and there's ways to do this efficiently. Clean up at a later point and make more
+        #   efficient. Such a hackish way of doing it, but it gets the job done /shrug
+
+        filtered_alerts = []
+
+        if 'alert_id' in args_supplied:
+            value = args_supplied['alert_id'].value
+            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.id]
+
+        if 'certainty' in args_supplied:
+            value = args_supplied['certainty'].value
+            filtered_alerts += [alert for v in value for alert in self.alerts
+                                if v == alert.certainty]
+
+        if 'effective_after' in args_supplied:
+            value = args_supplied['effective_after'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.effective is not None, value <= alert.effective])]
+
+        if 'effective_before' in args_supplied:
+            value = args_supplied['effective_before'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.effective is not None, value >= alert.effective])]
+
+        if 'ends_after' in args_supplied:
+            value = args_supplied['ends_after'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.effective is not None, value <= alert.ends])]
+
+        if 'ends_before' in args_supplied:
+            value = args_supplied['ends_before'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.effective is not None, value >= alert.ends])]
+
+        if 'event' in args_supplied:
+            value = args_supplied['event'].value
+            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.event]
+
+        if 'expires_after' in args_supplied:
+            value = args_supplied['expires_after'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.expires is not None, value <= alert.expires])]
+
+        if 'expires_before' in args_supplied:
+            value = args_supplied['expires_before'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.expires is not None, value >= alert.expires])]
+
+        if 'lat_northern_bound' in args_supplied:
+            # self.polygon.bounds => (minx, miny, maxx, maxy)
+            value = args_supplied['lat_northern_bound'].value
+            filtered_alerts += [alert for alert in self.alerts # check the polygons
+                                if all([alert.polygon is not None, value > self.polygon.bounds[3]])]
+            filtered_alerts += [alert for alert in self.alerts # check the points
+                                if all([alert.point is not None, value > self.polygon.bounds[3]])]
+
+        if 'lat_southern_bound' in args_supplied:
+            value = args_supplied['lat_northern_bound'].value
+            filtered_alerts += [alert for alert in self.alerts  # check the polygons
+                                if all([alert.polygon is not None, value < self.polygon.bounds[1]])]
+            filtered_alerts += [alert for alert in self.alerts  # check the points
+                                if all([alert.point is not None, value > self.point.bounds[1]])]
+
+        if 'lon_eastern_bound' in args_supplied:
+            value = args_supplied['lat_northern_bound'].value
+            filtered_alerts += [alert for alert in self.alerts  # check the polygons
+                                if all([alert.polygon is not None, value > self.polygon.bounds[2]])]
+            filtered_alerts += [alert for alert in self.alerts  # check the points
+                                if all([alert.point is not None, value > self.point.bounds[2]])]
+        if 'lon_western_bound' in args_supplied:
+            value = args_supplied['lat_northern_bound'].value
+            filtered_alerts += [alert for alert in self.alerts  # check the polygons
+                                if all([alert.polygon is not None, value > self.polygon.bounds[0]])]
+            filtered_alerts += [alert for alert in self.alerts  # check the points
+                                if all([alert.point is not None, value > self.point.bounds[0]])]
+
+        if 'onset_after' in args_supplied:
+            value = args_supplied['onset_after'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.onset is not None, value <= alert.onset])]
+
+        if 'onset_before' in args_supplied:
+            value = args_supplied['onset_before'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.onset is not None, value >= alert.onset])]
+
+        if 'sent_after' in args_supplied:
+            value = args_supplied['sent_after'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.sent is not None, value <= alert.sent])]
+
+        if 'sent_before' in args_supplied:
+            value = args_supplied['sent_before'].value
+            filtered_alerts += [alert for alert in self.alerts
+                                if all([alert.sent is not None, value >= alert.sent])]
+
+        if 'severity' in args_supplied:
+            value = args_supplied['severity'].value
+            if type(value) != list:
+                value = [value]
+            filtered_alerts += [alert for v in value for alert in self.alerts
+                                if v == alert.severity]
+
+        if 'status' in args_supplied:
+            value = args_supplied['status'].value
+            if type(value) != list:
+                value = [value]
+            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.status]
+
+        if 'urgency' in args_supplied:
+            value = args_supplied['urgency'].value
+            if type(value) != list:  # yuck
+                value = [value]
+            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.urgency]
 
         new_alert_obj = copy.deepcopy(self)
-        new_alert_obj.alerts = filtered_alerts
+        new_alert_obj.alerts = list(set(filtered_alerts))
         return new_alert_obj
 
     def count(self, alert_type: Union[str, list]) -> Union[int, list]:
@@ -240,7 +603,7 @@ class BaseAlert(_AlertIterator):
         count = [self._counter[alert.title()] if alert.title() in self._counter else 0 for alert in alert_type]
         if len(count) == 1:  # if there's only one alert type that was given.
             return count[0]
-        if len(count) == 0: # if there's zero, then give 0.
+        if len(count) == 0:  # if there's zero, then give 0.
             return 0
 
         return count  # otherwise, return the list.
@@ -256,13 +619,26 @@ class BaseAlert(_AlertIterator):
 
         df = pd.DataFrame()
         for alert in self.alerts:
-            df = df.append(alert.series, ignore_index = True)
+            df = df.append(alert.series, ignore_index=True)
 
         df = df.fillna(value=np.nan)
         return df
 
     def as_utc_time(self):
-        """Sets the object's date time objects to UTC time."""
+        """Sets the object's datetime objects to UTC time.
+
+        Caution
+        -------
+        The alert object does **not** store the original timezone, so if you need to convert back to the timezone of
+        issuance, you will be unable to.
+
+        Returns
+        -------
+        self
+            A deep copy of the same object, except with the times converted to UTC.
+        """
+
+        # TODO: change series to reflect utc times.
 
         new_alert_obj = copy.deepcopy(self)
         utc = pytz.timezone("UTC")
@@ -425,6 +801,7 @@ class AlertByMarineRegion(BaseAlert):
         These individual alerts comprise of ``alerts.AllAlerts.alerts``.
 
     """
+
     def __init__(self, region, user_agent):
 
         self._validate(region)  # make sure the data is valid.
@@ -462,6 +839,7 @@ class AlertByMarineRegion(BaseAlert):
 
             if data_val.upper() not in valid_data:
                 raise DataValidationError(data_val)
+
 
 @dataclass
 class AlertByArea(BaseAlert):
@@ -514,11 +892,7 @@ class AlertByArea(BaseAlert):
 
     def _validate(self, data):
 
-        valid_data = ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL',
-                      'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
-                      'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
-                      'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS',
-                      'LM', 'LH', 'LC', 'LE', 'LO']
+        valid_data = utils.valid_areas()
 
         if isinstance(data, str):
             data = [data]
@@ -569,7 +943,7 @@ class AlertByCount:
     alerts = None
 
     def __init__(self, user_agent):
-        response = utils.request("https://api.weather.gov/alerts/active/count", headers = user_agent)
+        response = utils.request("https://api.weather.gov/alerts/active/count", headers=user_agent)
         self.response_headers = response.headers
 
         if isinstance(response, requests.models.Response):
@@ -583,7 +957,8 @@ class AlertByCount:
         else:
             self.alerts = [response]
 
-    def _filter_by(self, region_area_or_zone, filter, docs_str) -> dict:  # private method, used to refactor filter_x methods.
+    def _filter_by(self, region_area_or_zone, filter,
+                   docs_str) -> dict:  # private method, used to refactor filter_x methods.
         """Used to refactor filter_x methods. Much cleaner this way."""
 
         valid = (isinstance(filter, str), isinstance(filter, list), isinstance(filter, tuple))
@@ -617,7 +992,7 @@ class AlertByCount:
 
         """
         return self._filter_by(self.regions, region,
-                        "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_marine_regions.html")
+                               "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_marine_regions.html")
 
     def filter_land_areas(self, area: Union[str, list, tuple]) -> dict:
         r"""Filters all active alerts based upon the land area.
@@ -634,7 +1009,7 @@ class AlertByCount:
 
         """
         return self._filter_by(self.areas, area,
-                            "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_land_areas.html")
+                               "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_land_areas.html")
 
     def filter_zones(self, zone: Union[str, list, tuple]) -> dict:
         r"""Filters all active alerts based upon the marine region.
@@ -651,7 +1026,7 @@ class AlertByCount:
 
         """
         return self._filter_by(self.zones, zone,
-                            "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_zones.html")
+                               "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_zones.html")
 
 
 @dataclass
@@ -672,10 +1047,11 @@ class AllAlerts(BaseAlert):
         These individual alerts comprise of ``alerts.AllAlerts.alerts``.
 
     """
-    def __init__(self, user_agent):
-        response = utils.request("https://api.weather.gov/alerts", headers = user_agent)
 
-        if isinstance(response, requests.models.Response): # successful retrieval
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts", headers=user_agent)
+
+        if isinstance(response, requests.models.Response):  # successful retrieval
             info = response.json()['features']
             ac = AlertConstructor()
             self.alerts = [ac.construct_alert(x) for x in info]
@@ -700,8 +1076,8 @@ class AlertTypes(_AlertIterator):
     """
 
     def __init__(self, user_agent):
-        response = utils.request("https://api.weather.gov/alerts/types", headers = user_agent)
-        if isinstance(response, requests.models.Response): # successful retrieval.
+        response = utils.request("https://api.weather.gov/alerts/types", headers=user_agent)
+        if isinstance(response, requests.models.Response):  # successful retrieval.
             self.alerts = response.json()['eventTypes']
         else:
             self.alerts = [response]
@@ -739,6 +1115,7 @@ class AlertByZone(BaseAlert):
         These individual alerts comprise of ``alerts.AllAlerts.alerts``.
 
     """
+
     def __init__(self, zoneID, user_agent):
 
         self._validate(zoneID)  # make sure the data is valid.
@@ -751,7 +1128,7 @@ class AlertByZone(BaseAlert):
         ac = AlertConstructor()
         for zone in zoneID:
             zone = zone.upper()
-            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}", headers= user_agent)
+            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}", headers=user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
                 continue
@@ -776,7 +1153,6 @@ class AlertByZone(BaseAlert):
 class ServerPing:
 
     def __init__(self, user_agent):
-
-        response = utils.request("https://api.weather.gov/", headers= user_agent)
+        response = utils.request("https://api.weather.gov/", headers=user_agent)
         self.status = response.json()['status']
         self.response_headers = response.headers
