@@ -18,27 +18,32 @@ class TestFilterBy(unittest.TestCase):
 
     # testing data types!
     def test_no_kwargs_filter(self):
-        '''Tests without any kwargs for filter. Expected: Parameter'''
+        '''Tests without any kwargs for filter. Expected: ParameterTypeError'''
         with self.assertRaises(errors.ParameterTypeError):
             self.alerts.filter_by()
 
-    def test_values_not_boolean(self):
-        """Tests to ensure that an errors.ParameterTypeError has been raised for parameters that have to be boolean
-
-        Parameters: active
-        """
+    def test_expected_list_is_empty(self):
         with self.assertRaises(errors.ParameterTypeError):
-            self.alerts.filter_by(active = 'this is active')
+            self.alerts.filter_by(event= [])
+            self.alerts.filter_by(urgency= [])
+            self.alerts.filter_by(severity= [])
+            self.alerts.filter_by(certainty= [])
 
     def test_times_not_datetime_obj(self):
         """Tests to ensure that an errors.ParameterTypeError has been raised for parameters that have to be datetime
             objects.
-
-        Parameters: start_time, end_time
         """
         with self.assertRaises(errors.ParameterTypeError):
-            self.alerts.filter_by(start_time = 'start time')
-            self.alerts.filter_by(end_time = 'end time')
+            self.alerts.filter_by(effective_before= 'effective_before')
+            self.alerts.filter_by(effective_after= 'effective_after')
+            self.alerts.filter_by(ends_before='ends_before')
+            self.alerts.filter_by(ends_after='ends_after')
+            self.alerts.filter_by(expires_before='expires_before')
+            self.alerts.filter_by(expires_after='expires_after')
+            self.alerts.filter_by(onset_before='onset_before')
+            self.alerts.filter_by(onset_after='onset_after')
+            self.alerts.filter_by(sent_before='sent_before')
+            self.alerts.filter_by(sent_after='sent_after')
 
     def test_ParameterTypeError(self):
         """Tests to ensure that an errors.ParameterTypeError has been raised for all parameters
@@ -85,13 +90,7 @@ class TestFilterBy(unittest.TestCase):
         Parameters: event, message_type, status, event, region_type, area, zone, urgency, severity, certainty
         """
         with self.assertRaises(errors.DataValidationError):
-            self.alerts.filter_by(status = "Not a valid status!")
-            self.alerts.filter_by(message_type="Not a valid message type!")
-            self.alerts.filter_by(status="Not a valid status!")
             self.alerts.filter_by(event="Not a valid NWS event!")
-            self.alerts.filter_by(region_type="Not a valid region type!")
-            self.alerts.filter_by(area="Not a valid NWS area!")
-            self.alerts.filter_by(zone="Not a valid NWS event!") # TODO: data validation table for this.
             self.alerts.filter_by(urgency="Not a valid urgency input! it must not be that urgent!")
             self.alerts.filter_by(severity="Not a valid severity level!")
             self.alerts.filter_by(certainty="Not a valid certainty level!")
@@ -99,19 +98,10 @@ class TestFilterBy(unittest.TestCase):
     def test_data_validation_is_right_but_formatted_wrong(self):
         """Tests to ensure that the data is formatted properly."""
 
-        self.alerts.filter_by(status = "SyStEm")
-        self.alerts.filter_by(message_type="aLeRt")
         self.alerts.filter_by(event="sEvEre tHunderStorm wArnIng")
         self.alerts.filter_by(severity="mInor")
         self.alerts.filter_by(urgency="pAst")
         self.alerts.filter_by(certainty="lIkeLy")
-
-    def test_return_type(self):
-        """Tests to make sure return type is correct. Note: This only tests get_all_alerts()"""
-
-        new_alerts = self.alerts.filter_by(active = True)  # successful filter option, filter it.
-        unsuccessful_msg = f"Return type is not correct. Expected: {type(self.alerts)}, got: {type(new_alerts)}"
-        self.assertEqual(type(new_alerts), type(self.alerts), unsuccessful_msg)
 
 
 if __name__ == '__main__':
