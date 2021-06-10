@@ -1,7 +1,5 @@
 import unittest
-from datetime import datetime
 from nwsapy import errors, nwsapy
-from nwsapy import alerts as al
 
 
 class TestFilterBy(unittest.TestCase):

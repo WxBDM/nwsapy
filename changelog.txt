@@ -1,0 +1,30 @@
+This document describes the changelog for all the different versions.
+
+Last updated: 5/28/21
+
+v0.2.0 (release: TBD)
+- `points` has been added: nwsapy.get_point(lat, lon) and nwsapy.get_point_stations(lat, lon).
+    - Pint was added in (to_pint()). This changes select units in all points objects.
+    -
+- `filter_by()` for alerts has been severely built upon:
+    - Includes data type checking to ensure that the data types are correct.
+    - Allows you to filter based upon the attributes.
+    - When called, it will give a copy of the object, following what pandas does with dataframes.
+        - This means filter_by() does not return a list.
+        - To keep it backwards compatible, all alert objects are iterable.
+- .effective_utc, .send_utc, etc has been introduced as a new attribute for alerts
+- Removed to_utc() from alerts
+- Removed .multipoint from alerts.
+- Test, test, tests! Lots of tests have been introduced to increase the code quality.
+- nwsapy.get_glossary() has been implemented. That was easy! *knocks on wood*
+- Removed private variable `_count` for all alert objects.
+- Removed data class from alerts. Why was this there? The world may never know.
+
+v0.1.0 (release: May 17, 2021)
+- Documentation follows how Pandas documentation is laid out.
+- Alerts module is implemented in it's full.
+- Documentation is put on readthedocs
+- Uploaded to pypi
+
+
+

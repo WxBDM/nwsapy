@@ -97,7 +97,7 @@ Valid Alert Products Table
 .. table:: Valid Alert Products
 
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+
-	| Valid NWS Alert Products: used when ``.count()`` and ``.filter_by()`` are called.                                                                       |
+	| Valid NWS Alert Products: used when ``.filter_by()`` are called.                                                                                        |
 	+========================================+==============================+=========================================+=======================================+
 	| 911 Telephone Outage Emergency         | Extreme Cold Watch           | High Wind Watch                         | Small Craft Advisory For Rough Bar    |
 	+----------------------------------------+------------------------------+-----------------------------------------+---------------------------------------+

@@ -4,6 +4,7 @@ from datetime import datetime
 from nwsapy import nwsapy
 import pandas as pd
 import random
+import shapely
 
 
 class IndividualAlerts(unittest.TestCase):
@@ -100,7 +101,7 @@ class IndividualAlerts(unittest.TestCase):
                       'parameters': [alert.parameters, dict],
                       'references': [alert.references, list],
                       'points': [alert.points, list],
-                      'polygon': [alert.polygon, list],
+                      'polygon': [alert.polygon, shapely.geometry.polygon.Polygon],
                       'series': [alert.series, pd.Series]
                       }
 

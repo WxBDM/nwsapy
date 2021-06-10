@@ -14,6 +14,5 @@ Alerts by ID
 	:maxdepth: 1
 	:hidden:
 	
-	alerts.AlertById.count <count>
 	alerts.AlertById.filter_by <filter_by>
 	alerts.AlertById.to_dataframe <dataframe>

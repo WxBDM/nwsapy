@@ -13,12 +13,12 @@ Specifically, this module holds classes for the following urls:
 
 You can find the API documentation here: https://www.weather.gov/documentation/services-web-api#/
 """
-from dataclasses import dataclass
 from typing import Union, Optional
 import collections
 import copy
 
-from shapely.geometry import Point, Polygon
+import shapely
+from shapely.geometry import Point
 from datetime import datetime
 import pandas as pd
 import pytz
@@ -63,7 +63,7 @@ class IndividualAlert:
             # If the geometry type is a polygon, make a polygon object as well. Otherwise set to none.
             geometry_type = geometries['type']
             if geometry_type == 'Polygon':
-                polygon_d['polygon'] = Polygon(points)
+                polygon_d['polygon'] = shapely.geometry.Polygon(points)
             else:  # only if it's a point (just in case, this needs to be tested)
                 polygon_d['polygon'] = None
 
@@ -88,14 +88,15 @@ class IndividualAlert:
     def _construct_series(self, alert_dictionary):
 
         # convert from shapely object to lat/lon
-        if alert_dictionary['points'] is not None:
-            points = [(point.y, point.x) for point in list(alert_dictionary['points'])]  # shapely is backwards >:(
-            alert_dictionary['points'] = points
+        series_d = copy.deepcopy(alert_dictionary)
+        if series_d['points'] is not None:
+            points = [(point.y, point.x) for point in list(series_d['points'])]  # shapely is backwards >:(
+            series_d['points'] = points
 
-        if alert_dictionary['polygon'] is not None:
-            alert_dictionary['polygon'] = list(alert_dictionary['polygon'].exterior.coords)
+        if series_d['polygon'] is not None:
+            series_d['polygon'] = list(series_d['polygon'].exterior.coords)
 
-        series = pd.Series(alert_dictionary)
+        series = pd.Series(series_d)
         return series
 
     def sent_before(self, other):
@@ -214,6 +215,17 @@ class _AlertIterator:
 
 
 class BaseAlert(_AlertIterator):
+
+    def _init_set_attributes_active_and_all_after_url(self, response):
+        """Set the attributes for active and all alerts."""
+
+        if isinstance(response, requests.models.Response):
+            info = response.json()['features']
+            self.alerts = [IndividualAlert(x) for x in info if x['properties']['event'] != 'Test Message']
+        else:
+            self.alerts = [response]  # this is in the event there's an error. Keep it in a list.
+
+        self.response_headers = response.headers
 
     def filter_by(self, alert_id: Optional[Union[str, list[str]]] = None,
                   certainty: Optional[Union[str, list[str]]] = None,
@@ -345,8 +357,8 @@ class BaseAlert(_AlertIterator):
         class Params:
             """Class to hold data types and constraints for checking"""
 
-            def __init__(self, param, expected_dtype, constraints, is_list = False):
-                if param is not None and is_list:
+            def __init__(self, param, expected_dtype, constraints):
+                if param is not None:
                     # this guarantees that our values are inside of a list.
                     if not any([isinstance(param, list), isinstance(param, tuple)]):
                         self.value = [param]  # put it into a list so it can be iterated over.
@@ -379,35 +391,33 @@ class BaseAlert(_AlertIterator):
                         if val not in self.constraints:
                             raise DataValidationError(val)
 
-        invalid = [event == [], urgency == [], severity == [], certainty == []]
+        invalid = (event == [], urgency == [], severity == [], certainty == [])
         if any(invalid):
             raise ParameterTypeError()
-
 
         # load the parameters into a dictionary and add their associated data type with it.
         utc_now = type(datetime.utcnow())  # serves no purpose other than to get data type.
         param_d = {
-            'alert_id': Params(alert_id, str, None, is_list = True),  # .id
-            'certainty': Params(certainty, str, ["Observed", "Likely", "Possible", "Unlikely", "Unknown"],
-                                is_list = True),  # certainty
+            'alert_id': Params(alert_id, str, None),  # .id
+            'certainty': Params(certainty, str, ["Observed", "Likely", "Possible", "Unlikely", "Unknown"]),  # certainty
             'effective_after': Params(effective_after, utc_now, None),  # .effective_after
             'effective_before': Params(effective_before, utc_now, None),  # .effective_before
             'ends_after': Params(ends_after, utc_now, None),  # .effective_before
             'ends_before': Params(ends_before, utc_now, None),  # .effective_before
-            'event': Params(event, str, utils.valid_products(), is_list = True),  # .event
+            'event': Params(event, str, utils.valid_products()),  # .event
             'expires_after': Params(expires_after, utc_now, None),  # .expires_after
             'expires_before': Params(expires_before, utc_now, None),  # .expires_before
-            'lat_northern_bound': Params(lat_northern_bound, [int, float], None),  # .polygon .point .point_collection
-            'lat_southern_bound': Params(lat_southern_bound, [int, float], None),  # .polygon .point .point_collection
-            'lon_eastern_bound': Params(lon_eastern_bound, [int, float], None),  # .polygon .point .point_collection
-            'lon_western_bound': Params(lon_western_bound, [int, float], None),  # .polygon .point .point_collection
+            'lat_northern_bound': Params(lat_northern_bound, [int, float], None),  # .polygon .point
+            'lat_southern_bound': Params(lat_southern_bound, [int, float], None),  # .polygon .point
+            'lon_eastern_bound': Params(lon_eastern_bound, [int, float], None),  # .polygon .point
+            'lon_western_bound': Params(lon_western_bound, [int, float], None),  # .polygon .point
             'onset_after': Params(onset_after, utc_now, None),  # .onset_after
             'onset_before': Params(onset_before, utc_now, None),  # .onset_before
             'sent_after': Params(sent_after, utc_now, None),  # .sent_after
             'sent_before': Params(sent_before, utc_now, None),  # .sent_before
-            'severity': Params(severity, str, ["Extreme", "Severe", "Moderate", "Minor", "Unknown"], is_list = True),  # .severity
-            'status': Params(status, str, ["Actual", "Exercise", "System", "Test", "Draft"], is_list = True),  # .status
-            'urgency': Params(urgency, str, ["Immediate", "Expected", "Future", "Past", "Unknown"], is_list = True),  # .urgency
+            'severity': Params(severity, str, ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]),  # .severity
+            'status': Params(status, str, ["Actual", "Exercise", "System", "Test", "Draft"]),  # .status
+            'urgency': Params(urgency, str, ["Immediate", "Expected", "Future", "Past", "Unknown"]),  # .urgency
         }
 
         # Remove all parameters if it is set to None
@@ -474,32 +484,73 @@ class BaseAlert(_AlertIterator):
 
         if 'lat_northern_bound' in param_d:
             # self.polygon.bounds => (minx, miny, maxx, maxy)
-            value = param_d['lat_northern_bound'].value
-            filtered_alerts += [alert for alert in self.alerts # check the polygons
-                                if all([alert.polygon is not None, value > alert.polygon.bounds[3]])]
-            filtered_alerts += [alert for alert in self.alerts # check the points
-                                if all([alert.point is not None, value > alert.polygon.bounds[3]])]
+            value = param_d['lat_northern_bound'].value[0] # it's stored as a list, unpack it.
+
+            for alert in self.alerts:
+                if alert.polygon is not None:
+                    if value > alert.polygon.bounds[3]:
+                        filtered_alerts += [alert]
+                if alert.point is not None:
+                    if value > alert.points.bounds[3]:
+                        filtered_alerts += [alert]
+
+            # filtered_alerts += [alert for alert in self.alerts # check the polygons
+            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[3]])]
+            # filtered_alerts += [alert for alert in self.alerts # check the points
+            #                     if all([alert.point is not None, value > alert.polygon.bounds[3]])]
 
         if 'lat_southern_bound' in param_d:
-            value = param_d['lat_northern_bound'].value
-            filtered_alerts += [alert for alert in self.alerts  # check the polygons
-                                if all([alert.polygon is not None, value < alert.polygon.bounds[1]])]
-            filtered_alerts += [alert for alert in self.alerts  # check the points
-                                if all([alert.point is not None, value > alert.point.bounds[1]])]
+            value = param_d['lat_southern_bound'].value[0] # it's stored as a list, unpack it.
+
+            for alert in self.alerts:
+                if alert.polygon is not None:
+                    if value > alert.polygon.bounds[1]:
+                        filtered_alerts += [alert]
+                if alert.point is not None:
+                    if value > alert.points.bounds[1]:
+                        filtered_alerts += [alert]
+
+            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
+            #                     if all([alert.polygon is not None, value < alert.polygon.bounds[1]])]
+            # filtered_alerts += [alert for alert in self.alerts  # check the points
+            #                     if all([alert.point is not None, value > alert.point.bounds[1]])]
 
         if 'lon_eastern_bound' in param_d:
-            value = param_d['lat_northern_bound'].value
-            filtered_alerts += [alert for alert in self.alerts  # check the polygons
-                                if all([alert.polygon is not None, value > alert.polygon.bounds[2]])]
-            filtered_alerts += [alert for alert in self.alerts  # check the points
-                                if all([alert.point is not None, value > alert.point.bounds[2]])]
+            value = param_d['lon_eastern_bound'].value[0] # it's stored as a list, unpack it.
+
+            # I can't use list comp here. None type doesn't have bounds, will throw error.
+            for alert in self.alerts:
+                if alert.polygon is not None:
+                    if value > alert.polygon.bounds[2]:
+                        filtered_alerts += [alert]
+                if alert.point is not None:
+                    if value > alert.points.bounds[2]:
+                        filtered_alerts += [alert]
+
+            #
+            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
+            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[2]])]
+            # filtered_alerts += [alert for alert in self.alerts  # check the points
+            #                     if all([alert.point is not None, value > alert.point.bounds[2]])]
 
         if 'lon_western_bound' in param_d:
-            value = param_d['lat_northern_bound'].value
-            filtered_alerts += [alert for alert in self.alerts  # check the polygons
-                                if all([alert.polygon is not None, value > alert.polygon.bounds[0]])]
-            filtered_alerts += [alert for alert in self.alerts  # check the points
-                                if all([alert.point is not None, value > alert.point.bounds[0]])]
+            # TODO: Fix this. Something weird is happening.
+            # Basically, reorganize it so that it first checks the polygon. If there is no polygon
+            #   then check the points. IF there is a polygon, no need to check the points.
+            value = param_d['lon_western_bound'].value[0]  # it's stored as a list, unpack it.
+
+            for alert in self.alerts:
+                if alert.polygon is not None:
+                    if value > alert.polygon.bounds[0]:
+                        filtered_alerts += [alert]
+                if alert.points is not None:
+                    if value > alert.points.bounds[0]:
+                        filtered_alerts += [alert]
+
+            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
+            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[0]])]
+            # filtered_alerts += [alert for alert in self.alerts  # check the points
+            #                     if all([alert.point is not None, value > alert.point.bounds[0]])]
 
         if 'onset_after' in param_d:
             value = param_d['onset_after'].value
@@ -554,14 +605,30 @@ class BaseAlert(_AlertIterator):
         return df
 
 
-@dataclass
+class AllAlerts(BaseAlert):
+    r"""A class used to hold information about all alerts found from ``alerts/active``.
+
+    Attributes
+    ----------
+    alerts : list[alerts.IndividualAlert]
+        A list containing alerts.
+    response_headers : requests.structures.CaseInsensitiveDict
+        A dictionary containing the response headers.
+
+    See Also
+    --------
+    :ref:`Individual Alerts`<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
+    """
+
+    def __init__(self, user_agent):
+        response = utils.request("https://api.weather.gov/alerts", headers=user_agent)
+        self._init_set_attributes_active_and_all_after_url(response)
+
+
 class ActiveAlerts(BaseAlert):
     r"""A class used to hold information about all active alerts found from ``alerts/active``.
-
-    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
-        A tornado warning alert would be a tornadowarning object.
-
-        A small craft advisory alert would be a smallcraftadvisory object.
 
     Attributes
     ----------
@@ -580,17 +647,9 @@ class ActiveAlerts(BaseAlert):
     def __init__(self, user_agent):
 
         response = utils.request("https://api.weather.gov/alerts/active", user_agent)
-
-        if isinstance(response, requests.models.Response):
-            info = response.json()['features']
-            self.alerts = [IndividualAlert(x) for x in info if x['properties']['event'] != 'Test Message']
-        else:
-            self.alerts = [response]
-        self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-        self.response_headers = response.headers  # requests.structures.CaseInsensitiveDict
+        self._init_set_attributes_active_and_all_after_url(response)
 
 
-@dataclass
 class AlertById(BaseAlert):
     r"""A class used to hold information about all active alerts found from ``alerts/active/{id}``.
 
@@ -610,26 +669,25 @@ class AlertById(BaseAlert):
 
     def __init__(self, alert_id, user_agent):
 
-        self._validate(alert_id)
-        if isinstance(alert_id, str):
-            alert_id = [alert_id]  # this is only to make it consistent with logic below.
+        alert_id = self._validate(alert_id)
 
         self.alerts = []
-        self.response_headers = []
+        self.response_headers = []  # it's 1 alert at a time, so keep it ordered.
         for a_id in alert_id:  # iterate through the alerts
             response = utils.request(f"https://api.weather.gov/alerts/{a_id}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)  # if something weird went wrong, put an error response in.
+                self.response_headers.append(response.headers)  # need to include the response header.
                 continue
 
-            info = response.json()  # all is good, construct the alert objects.
+            # no need to do response.json()['features'], as it's only one alert at a time.
+            info = response.json()  # all is good, construct the alert objects
+
+            # not going to filter out test message. If they get it, their fault.
             self.alerts.append(IndividualAlert(info))
             self.response_headers.append(response.headers)
 
-        self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-
     def _validate(self, alert_id):
-
         # Validate the input data and provide ParameterTypeError.
 
         invalid = (isinstance(alert_id, str), isinstance(alert_id, list), isinstance(alert_id, tuple))
@@ -643,15 +701,11 @@ class AlertById(BaseAlert):
             if not isinstance(alert, str):
                 raise ParameterTypeError(alert, "string")
 
+        return alert_id
 
-@dataclass
+
 class AlertByMarineRegion(BaseAlert):
     r"""A class used to hold information about all active alerts found from ``alerts/active/region/{region}``.
-
-    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
-        A tornado warning alert would be a tornadowarning object.
-
-        A small craft advisory alert would be a smallcraftadvisory object.
 
     Attributes
     ----------
@@ -665,16 +719,13 @@ class AlertByMarineRegion(BaseAlert):
     :ref:`Valid Data Points - Alerts by Marine Region<alerts_by_marine_table_validation>`
         Table in the documentation to show what regions are valid for this function.
     :ref:`Individual Alerts<individual_alerts_error>`
-        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+        These individual alerts comprise of ``alerts.AlertByMarineRegion.alerts``.
 
     """
 
     def __init__(self, region, user_agent):
 
-        self._validate(region)  # make sure the data is valid.
-
-        if isinstance(region, str):
-            region = [region]  # make it a list, eliminates unnecessary if/else statements.
+        region = self._validate(region)  # make sure the data is valid.
 
         self.alerts = []
         self.response_headers = []
@@ -683,11 +734,14 @@ class AlertByMarineRegion(BaseAlert):
             response = utils.request(f"https://api.weather.gov/alerts/active/region/{region_str}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
+                self.response_headers.append(response.headers)
                 continue
 
             info = response.json()['features']
             for x in info:
-                self.alerts.append(IndividualAlert(x))
+                if info['properties']['event'] != 'Test Message':
+                    self.alerts.append(IndividualAlert(x))
+
             self.response_headers.append(response.headers)
 
         self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
@@ -706,8 +760,9 @@ class AlertByMarineRegion(BaseAlert):
             if data_val.upper() not in valid_data:
                 raise DataValidationError(data_val)
 
+        return data
 
-@dataclass
+
 class AlertByArea(BaseAlert):
     r"""A class used to hold information about all active alerts found from ``alerts/active/area/{area}``.
 
@@ -733,10 +788,7 @@ class AlertByArea(BaseAlert):
     """
 
     def __init__(self, area, user_agent):
-        self._validate(area)  # make sure the data is valid.
-
-        if isinstance(area, str):
-            area = [area]  # make it a list, eliminates unnecessary if/else statements.
+        area = self._validate(area)  # make sure the data is valid.
 
         self.alerts = []
         self.response_headers = []
@@ -745,15 +797,15 @@ class AlertByArea(BaseAlert):
             response = utils.request(f"https://api.weather.gov/alerts/active/area/{area_str}", user_agent)
             if not isinstance(response, requests.models.Response):
                 self.alerts.append(response)
+                self.response_headers.append(response.headers)
                 continue
 
             info = response.json()['features']
             for x in info:
-                self.alerts.append(IndividualAlert(x))
+                if info['properties']['event'] != 'Test Message':
+                    self.alerts.append(IndividualAlert(x))
 
             self.response_headers.append(response.headers)
-
-        self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
 
     def _validate(self, data):
 
@@ -769,8 +821,67 @@ class AlertByArea(BaseAlert):
             if data_val.upper() not in valid_data:
                 raise DataValidationError(data)
 
+        return data
 
-@dataclass
+
+class AlertByZone(BaseAlert):
+    r"""A class used to hold information about all active alerts found from ``alerts/active/zone/{zoneId}``.
+
+    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
+        A tornado warning alert would be a tornadowarning object.
+
+        A small craft advisory alert would be a smallcraftadvisory object.
+
+    Attributes
+    ----------
+    alerts : list
+        A list containing data types corresponding to the alert.
+    response_headers : requests.structures.CaseInsensitiveDict
+        A dictionary containing the response headers.
+
+    Note
+    ----
+    This does not have data validation checks, so ensure that your zone ID's are correct, otherwise
+    you may run into a 404 error.
+
+    See Also
+    --------
+    :ref:`Individual Alerts<individual_alerts_error>`
+        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
+
+    """
+
+    def __init__(self, zoneID, user_agent):
+
+        zoneID = self._validate(zoneID)  # make sure the data is valid.
+
+        self.alerts = []
+        self.response_headers = []
+        for zone in zoneID:
+            zone = zone.upper()
+            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}", headers=user_agent)
+            if not isinstance(response, requests.models.Response):
+                self.alerts.append(response)
+                self.response_headers.append(response.headers)
+                continue
+
+            info = response.json()['features']
+            for x in info:
+                self.alerts.append(IndividualAlert(x))
+            self.response_headers.append(response.headers)
+
+    def _validate(self, data):
+
+        if isinstance(data, str):
+            data = [data]
+
+        for data_val in data:
+            if not isinstance(data_val, str):
+                raise ParameterTypeError(data_val, "string")
+
+        return data
+
+
 class AlertByCount:
     r"""A class used to hold information about all active alerts found from ``alerts/active/count``
 
@@ -819,6 +930,7 @@ class AlertByCount:
             self.regions = info['regions']  # dtype: dict {str : int}
             self.areas = info['areas']  # dtype: dict {str : int}
             self.zones = info['zones']  # dtype: dict {str : int}
+            self.alerts = [None]
         else:
             self.alerts = [response]
 
@@ -894,39 +1006,6 @@ class AlertByCount:
                                "https://nwsapy.readthedocs.io/en/latest/apiref/alerts/AlertByCount/filter_zones.html")
 
 
-@dataclass
-class AllAlerts(BaseAlert):
-    r"""A class used to hold information about all alerts found from ``alerts/active``.
-
-    Attributes
-    ----------
-    alerts : list
-        A list containing alerts (data type: the alert name) corresponding to the alert.
-        Example: [alert.tornadowarning, alert.testmessage, alert.smallcraftadvisory, ...]
-    response_headers : requests.structures.CaseInsensitiveDict
-        A dictionary containing the response headers.
-
-    See Also
-    --------
-    :ref:`Individual Alerts`<individual_alerts_error>`
-        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
-
-    """
-
-    def __init__(self, user_agent):
-        response = utils.request("https://api.weather.gov/alerts", headers=user_agent)
-
-        if isinstance(response, requests.models.Response):  # successful retrieval
-            info = response.json()['features']
-            self.alerts = [IndividualAlert(x) for x in info if x['properties']['event'] != 'Test Message']
-        else:
-            self.alerts = [response]
-
-        self._counter = collections.Counter(x.event for x in self.alerts)
-        self.response_headers = response.headers
-
-
-@dataclass
 class AlertTypes(_AlertIterator):
     r"""A class used to hold information about the alerts types found from ``alerts/types``.
 
@@ -952,68 +1031,8 @@ class AlertTypes(_AlertIterator):
         return ", ".join(self.alerts)
 
 
-@dataclass
-class AlertByZone(BaseAlert):
-    r"""A class used to hold information about all active alerts found from ``alerts/active/zone/{zoneId}``.
-
-    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
-        A tornado warning alert would be a tornadowarning object.
-
-        A small craft advisory alert would be a smallcraftadvisory object.
-
-    Attributes
-    ----------
-    alerts : list
-        A list containing data types corresponding to the alert.
-    response_headers : requests.structures.CaseInsensitiveDict
-        A dictionary containing the response headers.
-
-    Note
-    ----
-    This does not have data validation checks, so ensure that your zone ID's are correct, otherwise
-    you may run into a 404 error.
-
-    See Also
-    --------
-    :ref:`Individual Alerts<individual_alerts_error>`
-        These individual alerts comprise of ``alerts.AllAlerts.alerts``.
-
-    """
-
-    def __init__(self, zoneID, user_agent):
-
-        self._validate(zoneID)  # make sure the data is valid.
-
-        if isinstance(zoneID, str):
-            zoneID = [zoneID]  # make it a list, eliminates unnecessary if/else statements.
-
-        self.alerts = []
-        self.response_headers = []
-        for zone in zoneID:
-            zone = zone.upper()
-            response = utils.request(f"https://api.weather.gov/alerts/active/zone/{zone}", headers=user_agent)
-            if not isinstance(response, requests.models.Response):
-                self.alerts.append(response)
-                continue
-
-            info = response.json()['features']
-            for x in info:
-                self.alerts.append(IndividualAlert(x))
-            self.response_headers.append(response.headers)
-
-        self._counter = collections.Counter(x.event for x in self.alerts)  # counts the number of alerts
-
-    def _validate(self, data):
-
-        if isinstance(data, str):
-            data = [data]
-
-        for data_val in data:
-            if not isinstance(data_val, str):
-                raise ParameterTypeError(data_val, "string")
-
-
 class ServerPing:
+    """Tests the server to make sure it's OK."""
 
     def __init__(self, user_agent):
         response = utils.request("https://api.weather.gov/", headers=user_agent)

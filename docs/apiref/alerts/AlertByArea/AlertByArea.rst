@@ -14,6 +14,5 @@ Alerts by Area
 	:maxdepth: 1
 	:hidden:
 	
-	alerts.AlertByArea.count <count>
 	alerts.AlertByArea.filter_by <filter_by>
 	alerts.AlertByArea.to_dataframe <dataframe>

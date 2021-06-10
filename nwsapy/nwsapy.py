@@ -6,6 +6,7 @@ Radar, Products, etc).
 """
 from typing import Union
 import nwsapy.alerts as alerts
+import nwsapy.points as points
 import nwsapy.glossary as glossary
 from nwsapy.errors import ParameterTypeError
 
@@ -22,7 +23,7 @@ class NWSAPy:
     def _check_user_agent(self):
         if self._user_agent == "(NWSAPy, test@test.com)":
             print("Be sure to set the user agent. To prevent this message from appearing"
-                  " again, use: nwsapy.set_user_agent(app_name, contact)")
+                  " again, use: nwsapy.set_user_agent(app_name, email)")
 
     def set_user_agent(self, app_name, contact):
         """Sets the User-Agent in header for requests. This should be unique to your application.
@@ -194,4 +195,22 @@ class NWSAPy:
         """
         self._check_user_agent()
         return glossary.Glossary(self._user_agent_to_d)
+
+    def get_point(self, lat, lon):
+        """Gets a point from the API."""
+
+        self._check_user_agent()
+        return points.Point(lat, lon, self._user_agent_to_d)
+
+    def get_point_station(self, lat, lon):
+        """Retrieves a point's station information.
+
+        Returns
+        -------
+        :class:`points.PointStation`
+            An object containing information from /points/stations
+        """
+
+        self._check_user_agent()
+        return points.PointStation(lat, lon, self._user_agent_to_d)
 

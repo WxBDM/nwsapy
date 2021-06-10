@@ -3,7 +3,16 @@ Examples
 
 .. _example1:
 
-Example 1: Asynchronous Method
+Example 1: Filtering Alerts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let's suppose that you want to filter alerts by a specific kind of event, but east of longitude -100.
+
+.. code-block:: python
+
+.. _example2:
+
+Example 2: Asynchronous Method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Let's suppose you're putting togther an application that requires asynchronous programming. NWSAPy doesn't support this directly, but one workaround is utilizing ``await asyncio.sleep()``. The following example shows a method that will check every 45 seconds for tornado warnings and save the descriptions and which tornado warning expires first:

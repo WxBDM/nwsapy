@@ -14,6 +14,5 @@ Alerts By Marine Region
 	:maxdepth: 1
 	:hidden:
 	
-	alerts.AlertByMarineRegion.count <count>
 	alerts.AlertByMarineRegion.filter_by <filter_by>
 	alerts.AlertByMarineRegion.to_dataframe <dataframe>

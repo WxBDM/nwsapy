@@ -14,6 +14,5 @@ Alerts by Zone
 	:maxdepth: 1
 	:hidden:
 	
-	alerts.AlertByZone.count <count>
 	alerts.AlertByZone.filter_by <filter_by>
 	alerts.AlertByZone.to_dataframe <dataframe>

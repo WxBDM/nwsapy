@@ -2,34 +2,48 @@ Active Alerts: Filter By
 ========================
 
 .. currentmodule:: nwsapy.alerts
+
+**What this method does**: Filters alerts by the given parameters.
+
+**What this method returns**: :class:`alerts.ActiveAlerts` (itself)
+
+**How many requests does this method make to the NWS API?** None.
+
+**Example Usage**:
+
+.. code-block:: python
+
+	all_alerts = nwsapy.get_active_alerts()
+	filtered = all_alerts.filter_by(event = 'Tornado Warning')
+
+Will filter all of the alerts in the active alerts object by tornado warnings. Likewise:
+
+.. code-block:: python
+
+	all_alerts = nwsapy.get_active_alerts()
+	filtered = all_alerts.filter_by(event = ['Tornado Warning', 'Severe Thunderstorm Warning'])
+	
+Will filter all of the alerts in the active alerts object to be severe thunderstorm warnings and tornado warnings.
+
+You can also supply multiple filters: 
+
+.. code-block:: python
+
+	all_alerts = nwsapy.get_active_alerts()
+	filtered = all_alerts.filter_by(event=["Severe Thunderstorm Warning", 'Tornado Warning'], severity='Severe')
+
+This will filter all active alerts by the severity ranking of severe and if it's either a severe thunderstorm warning.
+
+.. important::
+	
+	This will not return severe thunderstorm and tornado warnings that are of severity 'severe'. This will include all non-tornado and non-severe thunderstorm warnings that have the severity level set to be severe. To get severe thunderstorm warnings and tornado warnings based off of the "severe" severity level, you will have to call the method twice:
+	
+	>>> all_alerts = nwsapy.get_active_alerts()
+	>>> filtered = all_alerts.filter_by(event=["Severe Thunderstorm Warning", 'Tornado Warning'])
+	>>> filtered = all_alerts.filter_by(severity='Severe')
+	
+|
+
 .. automethod:: ActiveAlerts.filter_by
 	:noindex:
-
-**Examples**
-
-A simple example stating the number of warnings:
-
->>> all_alerts = nwsapy.get_active_alerts()
->>> filtered = all_alerts.filter_by("flood warning")
->>> print(f'There are {len(filtered)} flood warnings active.')
-There are 52 flood warnings active.
-
-If we wanted to print all of the headlines, but there's additional alerts that are being filtered:
-
->>> all_alerts = nwsapy.get_active_alerts()
->>> filtered = all_alerts.filter_by(['Tornado Warning', 'Flash Flood Warning', 'Small Craft Advisory'])
->>> sca_advisory = [x.headline for x in filtered if isinstance(x, alerts.smallcraftadvisory)]
->>> print("Headlines for all small craft advisories:")
->>> for advisory in sca_advisory:
->>>    print(f"\t{advisory}")
-Headlines for all small craft advisories:
-	Small Craft Advisory issued May 15 at 2:25PM PDT until May 16 at 6:00AM PDT by NWS Eureka CA
-	Small Craft Advisory issued May 15 at 2:17PM PDT until May 16 at 11:00PM PDT by NWS Portland OR
-
-We could also isolate each individual warning type so that ``isinstance()`` isn't used:
-
->>> all_alerts = nwsapy.get_active_alerts()
->>> sca = all_alerts.filter_by('Small Craft Advisory')
->>> tors = all_alerts.filter_by('Tornado Warning')
->>> svr_tstorms = all_alerts.filter_by('Severe Thunderstorm Warning')
 
