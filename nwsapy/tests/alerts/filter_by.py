@@ -101,6 +101,30 @@ class TestFilterBy(unittest.TestCase):
         self.alerts.filter_by(urgency="pAst")
         self.alerts.filter_by(certainty="lIkeLy")
 
+    def test_alert_id_param(self):
+        """Tests to ensure that the alerts are getting filtered by id."""
+        # test an individual one. Since this is dynamic, just get the first n.
+        should_be_one_alert = self.alerts.filter_by(alert_id=self.alerts[0].id)
+        self.assertEquals(len(should_be_one_alert), 1, f"alert_id is not length 1. Got: {len(should_be_one_alert)}")
+
+        # test multiple alerts.
+        should_be_three_alerts = self.alerts.filter_by(alert_id = [self.alerts[x].id for x in range(0, 3)])
+        self.assertEquals(len(should_be_three_alerts), 3, f"alert_id is not length 3. Got: {len(should_be_three_alerts)}")
+
+        # test if it's invalid alert, should return a length of 0.
+        should_be_none = self.alerts.filter_by(alert_id = "None! :)")
+        self.assertEquals(len(should_be_none), 0, f"alert_id is not length 0. Got: {len(should_be_none)}")
+
+        # test to make sure the alert is a string, raises ParameterTypeError.
+        with self.assertRaises(errors.ParameterTypeError):
+            self.alerts.filter_by(alert_id = 321312)
+            self.alerts.filter_by(alert_id = 12.132)
+            self.alerts.filter_by(alert_id = (32, "TDD is a pain sometimes."))
+            self.alerts.filter_by(alert_id = ['a list?', 'heck yes.'])
+
+    def test_certainty_param(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

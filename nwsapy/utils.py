@@ -1,7 +1,40 @@
 """Utility file."""
 
+import json
 import requests
 from requests.exceptions import HTTPError
+
+
+class ErrorObject:
+    # Can't put docstring here, sphinx won't recognize it >:(
+    def __init__(self, response):
+        response = json.loads(response.text)
+        for k, v in response.items():  # the response text is going to allow us to see the response from the API
+            setattr(self, k, v)
+
+
+class ObjectIterator:
+
+    def __iter__(self):
+        """Allows for iteration though self.alerts."""
+        self._index = 0
+        return self
+
+    def __next__(self):
+        """Allows for iteration through self.alerts."""
+        if self._index < len(self._iterable):
+            val = self._iterable[self._index]
+            self._index += 1
+            return val
+        else:
+            raise StopIteration
+
+    def __getitem__(self, index):
+        """Allows for alerts object to be directly indexable."""
+        return self._iterable[index]
+
+    def __len__(self):
+        return len(self._iterable)
 
 
 def request(url, headers):
@@ -14,26 +47,7 @@ def request(url, headers):
     except HTTPError:
         # Possible error message: requests.exceptions.HTTPError: 503 Server Error:
         #   Service Unavailable for url: https://api.weather.gov/alerts/active
-        if response.status_code == 503:
-            error_obj = type('error', (), {'event': 'error',
-                                           'status_code': 503,
-                                           'description': 'Service unavailable',
-                                           'headers': response.headers
-                                           }
-                             )
-        elif response.status_code == 404:
-            error_obj = type('error', (), {'event': 'error',
-                                           'status_code': 404,
-                                           'description': 'Not found',
-                                           'headers': response.headers
-                                           }
-                             )
-        else:
-            query = response.json()
-            query.update({'event': 'error'})  # this is added to be more flush with the code.
-            error_obj = type("error", (), query)
-
-        return error_obj()
+        return response
     except Exception as err:
         raise Exception(f'Other error occurred: {err}')
 
