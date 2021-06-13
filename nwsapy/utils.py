@@ -1,5 +1,5 @@
 """Utility file."""
-
+import copy
 import json
 import requests
 from requests.exceptions import HTTPError
@@ -95,3 +95,10 @@ def valid_areas():
             'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
             'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS',
             'LM', 'LH', 'LC', 'LE', 'LO']
+
+
+def eliminate_none_in_param_d(params):
+    itr = copy.deepcopy(params)
+    for key, value in itr.items():
+        if value is None:
+            params.pop(key)

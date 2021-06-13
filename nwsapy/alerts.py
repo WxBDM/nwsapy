@@ -13,8 +13,7 @@ Specifically, this module holds classes for the following urls:
 
 You can find the API documentation here: https://www.weather.gov/documentation/services-web-api#/
 """
-import pprint
-from typing import Union, Optional
+from typing import Union
 import copy
 
 import shapely
@@ -26,6 +25,7 @@ import numpy as np
 import requests
 
 from nwsapy.errors import ParameterTypeError, DataValidationError
+from nwsapy.url_constructor import AlertURLConstructor
 import nwsapy.utils as utils
 
 
@@ -217,8 +217,9 @@ class IndividualAlert:
 
 class BaseAlert(utils.ObjectIterator):
 
-    n_errors = 0 # count the number of errors in the alert object.
+    n_errors = 0  # count the number of errors in the alert object.
     has_any_request_errors = False
+    url_constructor = AlertURLConstructor()
 
     def _init_active_and_all(self, response):
         """Set the attributes for active and all alerts."""
@@ -251,6 +252,7 @@ class BaseAlert(utils.ObjectIterator):
                 self.alerts.append(AlertError(response))
                 self.response_headers.append(response.headers)
                 self.n_errors += 1
+                self.has_any_request_errors = True
             else:
                 info = response.json()['features']
                 for x in info:
@@ -260,361 +262,6 @@ class BaseAlert(utils.ObjectIterator):
             self.response_headers.append(response.headers)
 
         self._iterable = self.alerts  # make the object iterable.
-
-    def filter_by(self, alert_id: Union[str, list[str]] = None, certainty: Union[str, list[str]] = None,
-                  effective_after: datetime = None, effective_before: datetime = None, ends_after: datetime = None,
-                  ends_before: Optional[datetime] = None, event: Union[str, list[str]] = None,
-                  expires_after: datetime = None, expires_before: datetime = None,
-                  lat_northern_bound: Union[float, int] = None, lat_southern_bound: Union[float, int] = None,
-                  lon_eastern_bound: Union[float, int] = None, lon_western_bound: Union[float, int] = None,
-                  onset_after: datetime = None, onset_before: datetime = None, sent_after: datetime = None,
-                  sent_before: datetime = None, severity: Union[str, list[str]] = None,
-                  status: Union[str, list[str]] = None, urgency: Union[str, list[str]] = None) -> object:
-        r"""Filters all active alerts based upon the alert type.
-
-        Parameters
-        ----------
-        alert_id: str or list
-            The ID associated with a specific alert, or a list containing alerts IDs. If ``None``, this parameter
-            is ignored.
-
-        certainty: str or list
-            The certainty of the warning. If ``None``, this parameter is ignored. If the attribute is ``None``, the
-            alert will be filtered out.
-
-        lat_northern_bound: float or int
-            The northern-most latitude in which alerts should be filtered by. For example, if 35 is given, it will
-            filter out any alerts that go above 35 latitude. If ``None``, this parameter is ignored. If the attribute
-            is ``None``, the alert will be filtered out.
-
-        lat_southern_bound: float or int
-            The southern-most latitude in which alerts should be filtered by. For example, if 10 is given, it will
-            filter out any alerts that go below 10 latitude. If ``None``, this parameter is ignored. If the attribute
-            is ``None``, the alert will be filtered out.
-
-        lon_western_bound: float or int
-            The western-most longitude in which alerts should be filtered by. For example, if -100 is given, it will
-            filter any alerts that are west of -100 longitude. If ``None``, this parameter is ignored. If the attribute
-            is ``None``, the alert will be filtered out.
-
-        lon_eastern_bound: float or int
-            The eastern-most longitude in which alerts should be filtered by. For example, if -80 is given, it will
-            filter out any alerts that are east of -80 longitude. If ``None``, this parameter is ignored. If the
-            attribute is ``None``, the alert will be filtered out.
-
-        effective_before: datetime
-            Any effective times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        effective_after: datetime
-            Any effective times that are after this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        ends_before: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        ends_after: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        event: str or list
-            The event shown on the :ref:`Valid Alert Types<valid_nws_alert_products>` table. If ``None``, this parameter
-            is ignored.
-
-        onset_before: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        onset_after: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        sent_before: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        sent_after: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        expires_before: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored.
-
-        expires_after: datetime
-            Any end times that are before this parameter will be filtered out. If the attribute is ``None``, it
-            will be filtered out. If ``None`` this parameter is ignored. If the two times are equal, they will not be
-            filtered out.
-
-        severity: str or list
-            The severity in which the alert is. Severity is either "Extreme", "Severe", "Moderate", "Minor",
-            or "Unknown".
-
-        status: str or list
-            What kind of message it is. Either "Actual", "Exercise", "System", "Test", or "Draft".
-
-        urgency: str or list
-            The urgency of the alert. Either "Immediate", "Expected", "Future", "Past", or "Unknown".
-
-
-        Raises
-        ------
-        nwsapy.ParameterTypeError
-            If the parameter isn't the correct data type.
-        nwsapy.DataValidationError
-            If the alert type isn't a valid National Weather Service alert.
-
-        Returns
-        -------
-        self
-            A deep copy of the same object, except with the filtered alerts.
-
-        """
-
-        class Params:
-            """Class to hold data types and constraints for checking"""
-
-            def __init__(self, param, expected_dtype, constraints):
-                if param is not None:
-                    # this guarantees that our values are inside of a list.
-                    if not any([isinstance(param, list), isinstance(param, tuple)]):
-                        self.value = [param]  # put it into a list so it can be iterated over.
-                    else:
-                        self.value = param
-
-                    self.dtype = expected_dtype
-                else:
-                    self.value = None
-                    self.dtype = type(None)
-
-                self.constraints = constraints
-
-            def check_data_type(self):
-                for itr in self.value:  # iterate through the list (either 1 or n vals)
-                    if type(self.dtype) == list:  # some of the parameters have 2 possible dtypes, they're in a list.
-                        valid = [isinstance(itr, dtype) for dtype in self.dtype]
-
-                        if not any(valid):
-                            raise ParameterTypeError(itr, self.dtype)
-
-                    else:  # otherwise just simply check the data type.
-                        if not isinstance(itr, self.dtype):
-                            raise ParameterTypeError(itr, self.dtype)
-
-            def validate_data(self):
-                if self.constraints is not None:
-                    self.value = [x.title() for x in self.value]  # convert all to a string.
-                    for val in self.value:
-                        if val not in self.constraints:
-                            raise DataValidationError(val)
-
-        invalid = (event == [], urgency == [], severity == [], certainty == [])
-        if any(invalid):
-            raise ParameterTypeError()
-
-        # load the parameters into a dictionary and add their associated data type with it.
-        utc_now = type(datetime.utcnow())  # serves no purpose other than to get data type.
-        param_d = {
-            'alert_id': Params(alert_id, str, None),  # .id
-            'certainty': Params(certainty, str, ["Observed", "Likely", "Possible", "Unlikely", "Unknown"]),  # certainty
-            'effective_after': Params(effective_after, utc_now, None),  # .effective_after
-            'effective_before': Params(effective_before, utc_now, None),  # .effective_before
-            'ends_after': Params(ends_after, utc_now, None),  # .effective_before
-            'ends_before': Params(ends_before, utc_now, None),  # .effective_before
-            'event': Params(event, str, utils.valid_products()),  # .event
-            'expires_after': Params(expires_after, utc_now, None),  # .expires_after
-            'expires_before': Params(expires_before, utc_now, None),  # .expires_before
-            'lat_northern_bound': Params(lat_northern_bound, [int, float], None),  # .polygon .point
-            'lat_southern_bound': Params(lat_southern_bound, [int, float], None),  # .polygon .point
-            'lon_eastern_bound': Params(lon_eastern_bound, [int, float], None),  # .polygon .point
-            'lon_western_bound': Params(lon_western_bound, [int, float], None),  # .polygon .point
-            'onset_after': Params(onset_after, utc_now, None),  # .onset_after
-            'onset_before': Params(onset_before, utc_now, None),  # .onset_before
-            'sent_after': Params(sent_after, utc_now, None),  # .sent_after
-            'sent_before': Params(sent_before, utc_now, None),  # .sent_before
-            'severity': Params(severity, str, ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]),  # .severity
-            'status': Params(status, str, ["Actual", "Exercise", "System", "Test", "Draft"]),  # .status
-            'urgency': Params(urgency, str, ["Immediate", "Expected", "Future", "Past", "Unknown"]),  # .urgency
-        }
-
-        # Remove all parameters if it is set to None
-        param_iteration_d = copy.deepcopy(param_d)  # need to make a copy of it and iterate through that. RunTimeError.
-        for param in param_iteration_d:
-            if param_d[param].value is None:
-                del param_d[param]
-
-        # Check to see if there were any arguments supplied.
-        if len(param_d) == 0:  # there weren't any arguments supplied, throw an error.
-            raise ParameterTypeError(filter_by_test=True)
-
-        for param in param_d.values():
-            param.check_data_type()   # Check all data types
-            param.validate_data()  # Validate the data
-
-        # There's ways to do this, and there's ways to do this efficiently. Clean up at a later point and make more
-        #   efficient. Such a hackish way of doing it, but it gets the job done /shrug
-
-        filtered_alerts = []
-
-        if 'alert_id' in param_d:
-            value = param_d['alert_id'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.id]
-
-        if 'certainty' in param_d:
-            value = param_d['certainty'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts
-                                if v == alert.certainty]
-
-        if 'effective_after' in param_d:
-            value = param_d['effective_after'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.effective is not None, value <= alert.effective])]
-
-        if 'effective_before' in param_d:
-            value = param_d['effective_before'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.effective is not None, value >= alert.effective])]
-
-        if 'ends_after' in param_d:
-            value = param_d['ends_after'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.effective is not None, value <= alert.ends])]
-
-        if 'ends_before' in param_d:
-            value = param_d['ends_before'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.effective is not None, value >= alert.ends])]
-
-        if 'event' in param_d:
-            value = param_d['event'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.event]
-
-        if 'expires_after' in param_d:
-            value = param_d['expires_after'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.expires is not None, value <= alert.expires])]
-
-        if 'expires_before' in param_d:
-            value = param_d['expires_before'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.expires is not None, value >= alert.expires])]
-
-        if 'lat_northern_bound' in param_d:
-            # self.polygon.bounds => (minx, miny, maxx, maxy)
-            value = param_d['lat_northern_bound'].value[0] # it's stored as a list, unpack it.
-
-            for alert in self.alerts:
-                if alert.polygon is not None:
-                    if value > alert.polygon.bounds[3]:
-                        filtered_alerts += [alert]
-                if alert.point is not None:
-                    if value > alert.points.bounds[3]:
-                        filtered_alerts += [alert]
-
-            # filtered_alerts += [alert for alert in self.alerts # check the polygons
-            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[3]])]
-            # filtered_alerts += [alert for alert in self.alerts # check the points
-            #                     if all([alert.point is not None, value > alert.polygon.bounds[3]])]
-
-        if 'lat_southern_bound' in param_d:
-            value = param_d['lat_southern_bound'].value[0] # it's stored as a list, unpack it.
-
-            for alert in self.alerts:
-                if alert.polygon is not None:
-                    if value > alert.polygon.bounds[1]:
-                        filtered_alerts += [alert]
-                if alert.point is not None:
-                    if value > alert.points.bounds[1]:
-                        filtered_alerts += [alert]
-
-            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
-            #                     if all([alert.polygon is not None, value < alert.polygon.bounds[1]])]
-            # filtered_alerts += [alert for alert in self.alerts  # check the points
-            #                     if all([alert.point is not None, value > alert.point.bounds[1]])]
-
-        if 'lon_eastern_bound' in param_d:
-            value = param_d['lon_eastern_bound'].value[0] # it's stored as a list, unpack it.
-
-            # I can't use list comp here. None type doesn't have bounds, will throw error.
-            for alert in self.alerts:
-                if alert.polygon is not None:
-                    if value > alert.polygon.bounds[2]:
-                        filtered_alerts += [alert]
-                if alert.point is not None:
-                    if value > alert.points.bounds[2]:
-                        filtered_alerts += [alert]
-
-            #
-            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
-            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[2]])]
-            # filtered_alerts += [alert for alert in self.alerts  # check the points
-            #                     if all([alert.point is not None, value > alert.point.bounds[2]])]
-
-        if 'lon_western_bound' in param_d:
-            # TODO: Fix this. Something weird is happening.
-            # Basically, reorganize it so that it first checks the polygon. If there is no polygon
-            #   then check the points. IF there is a polygon, no need to check the points.
-            value = param_d['lon_western_bound'].value[0]  # it's stored as a list, unpack it.
-
-            for alert in self.alerts:
-                if alert.polygon is not None:
-                    if value > alert.polygon.bounds[0]:
-                        filtered_alerts += [alert]
-                if alert.points is not None:
-                    if value > alert.points.bounds[0]:
-                        filtered_alerts += [alert]
-
-            # filtered_alerts += [alert for alert in self.alerts  # check the polygons
-            #                     if all([alert.polygon is not None, value > alert.polygon.bounds[0]])]
-            # filtered_alerts += [alert for alert in self.alerts  # check the points
-            #                     if all([alert.point is not None, value > alert.point.bounds[0]])]
-
-        if 'onset_after' in param_d:
-            value = param_d['onset_after'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.onset is not None, value <= alert.onset])]
-
-        if 'onset_before' in param_d:
-            value = param_d['onset_before'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.onset is not None, value >= alert.onset])]
-
-        if 'sent_after' in param_d:
-            value = param_d['sent_after'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.sent is not None, value <= alert.sent])]
-
-        if 'sent_before' in param_d:
-            value = param_d['sent_before'].value
-            filtered_alerts += [alert for alert in self.alerts
-                                if all([alert.sent is not None, value >= alert.sent])]
-
-        if 'severity' in param_d:
-            value = param_d['severity'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts
-                                if v == alert.severity]
-
-        if 'status' in param_d:
-            value = param_d['status'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.status]
-
-        if 'urgency' in param_d:
-            value = param_d['urgency'].value
-            filtered_alerts += [alert for v in value for alert in self.alerts if v == alert.urgency]
-
-        new_alert_obj = copy.deepcopy(self)
-        new_alert_obj.alerts = list(set(filtered_alerts))
-        new_alert_obj._iterable = new_alert_obj.alerts  # need to reset the iterable, otherwise it won't work.
-        return new_alert_obj
 
     def to_dataframe(self) -> pd.DataFrame:
         r"""Converts all of all retrieved alerts into a Pandas dataframe.
@@ -660,8 +307,12 @@ class AllAlerts(BaseAlert):
 
     """
 
-    def __init__(self, user_agent):
-        response = utils.request("https://api.weather.gov/alerts", headers=user_agent)
+    def __init__(self, user_agent, param_d):
+        if len(param_d) != 0:
+            url = self.url_constructor.all_alert_url_constructor(param_d)
+        else:
+            url = "https://api.weather.gov/alerts"
+        response = utils.request(url, headers=user_agent)
         self._init_active_and_all(response)
 
 
@@ -717,9 +368,11 @@ class AlertById(BaseAlert):
         self.response_headers = []  # it's 1 alert at a time, so keep it ordered.
         for a_id in alert_id:  # iterate through the alerts
             response = utils.request(f"https://api.weather.gov/alerts/{a_id}", user_agent)
-            if not isinstance(response, requests.models.Response):
-                self.alerts.append(response)  # if something weird went wrong, put an error response in.
-                self.response_headers.append(response.headers)  # need to include the response header.
+            if not response.ok:
+                self.alerts.append(AlertError)
+                self.response_headers.append(response.headers)
+                self.n_errors += 1
+                self.has_any_request_errors = True
                 continue
 
             # no need to do response.json()['features'], as it's only one alert at a time.
