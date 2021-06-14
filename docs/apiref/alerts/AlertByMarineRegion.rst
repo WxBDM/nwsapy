@@ -9,10 +9,3 @@ Alerts By Marine Region
 .. autoclass:: nwsapy.alerts.AlertByMarineRegion
 	:inherited-members:
 	:members:
-
-.. toctree::
-	:maxdepth: 1
-	:hidden:
-	
-	alerts.AlertByMarineRegion.filter_by <filter_by>
-	alerts.AlertByMarineRegion.to_dataframe <dataframe>

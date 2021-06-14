@@ -9,10 +9,3 @@ Alerts by Zone
 .. autoclass:: nwsapy.alerts.AlertByZone
 	:inherited-members:
 	:members:
-
-.. toctree::
-	:maxdepth: 1
-	:hidden:
-	
-	alerts.AlertByZone.filter_by <filter_by>
-	alerts.AlertByZone.to_dataframe <dataframe>

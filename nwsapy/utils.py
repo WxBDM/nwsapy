@@ -16,12 +16,12 @@ class ErrorObject:
 class ObjectIterator:
 
     def __iter__(self):
-        """Allows for iteration though self.alerts."""
+        """Allows for iteration though object."""
         self._index = 0
         return self
 
     def __next__(self):
-        """Allows for iteration through self.alerts."""
+        """Allows for iteration through object."""
         if self._index < len(self._iterable):
             val = self._iterable[self._index]
             self._index += 1
@@ -30,7 +30,7 @@ class ObjectIterator:
             raise StopIteration
 
     def __getitem__(self, index):
-        """Allows for alerts object to be directly indexable."""
+        """Allows for object to be directly indexable."""
         return self._iterable[index]
 
     def __len__(self):
@@ -102,3 +102,7 @@ def eliminate_none_in_param_d(params):
     for key, value in itr.items():
         if value is None:
             params.pop(key)
+
+
+def valid_zones():
+    return []

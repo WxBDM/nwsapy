@@ -48,18 +48,3 @@ Let's suppose you're putting togther an application that requires asynchronous p
 	# create a task running in the background
 	self.application.create_task(tor_warnings_every_45_seconds)
 
-
-.. toctree::
-    :hidden:
-	
-    Alerts <apiref/alerts/alerts>
-    Glossary <apiref/glossary>
-    Gridpoints <apiref/gridpoints>
-    Icons <apiref/icons>
-    Thumbnail <apiref/thumbnails>
-    Stations <apiref/stations>
-    Offices <apiref/offices>
-    Points <apiref/points>
-    Radar <apiref/radar>
-    Products <apiref/products>
-    Zones <apiref/zones>

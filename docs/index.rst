@@ -3,40 +3,40 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-==============================================================
-NWSAPy: A Pythonic Way to Use the National Weather Service API
-==============================================================
+=====================================================================
+NWSAPy: A Pythonic Implementation of the National Weather Service API
+=====================================================================
 
 NWSAPy (APy, for short) is designed to be a pythonic approach to utilizing the National Weather Service API. The goals of the package are simple:
 
-- **Keep Clean, Simplistic, Minimal, and Consistent Code**
-- **Minimize 404 Errors**
-- **Minimize Overhead for Prerequisite API Knowledge**
+- **Maintain clean, simplistic, minimal, and consistent user-end code**
+- **Construct URLs and request data on your behalf**
+- **Minimize API knowledge overhead**
 
 Here's a few brief examples of how easy it is to use the package:
 
-Let's say we want to put all severe thunderstorm warning information (headline, warning experation time, etc) in a pandas dataframe:
+Let's say we want to get all of the tornado warnings, then package all the information together in a dataframe:
 
 .. code-block:: python
 
-	from nwsapy import nwsapy
+   from nwsapy import nwsapy
 
-	active_alerts = nwsapy.get_active_alerts()
-	tstorms = active_alerts.filter_by("Severe Thunderstorm Warning")
-	df = tstorms.to_dataframe()
+   nwsapy.set_user_agent("Application Name", "youremail@domain.com or website")
+   active_tor_warnings = nwsapy.get_active_alerts(event = "Tornado Warning")
+   df = active_tor_warnings.to_dataframe()
 
-	
-Suppose you wanted to get the forecast for a specific point and display the min and max temperatures for Day 1:
+Suppose we want to convert units to pint:
 
 .. code-block:: python
 
-	from nwsapy import nwsapy
-	
-	# Forecast for Auburn, AL
-	forecast = nwsapy.get_forecast_for_point(32.6099, -85.4808)
-	print(forecast.day1.temp_max)
-	print(forecast.day1.temp_min)
-	
+   from nwsapy import nwsapy
+   from pint import UnitRegistry
+
+   nwsapy.set_user_agent("Application Name", "youremail@domain.com or website")
+   point = nwsapy.get_point(32.6099, -85.4808)  # Auburn, AL
+   point = point.to_pint(UnitRegistry())  # pass in your unit registry
+   print(point.distance) # 854.1731315087 meter
+
 Implementation of the full API is in progress. The documentation will update on an as-needed basis to reflect this.
 
 The National Weather Service API can be found here: https://www.weather.gov/documentation/services-web-api#/
@@ -62,7 +62,7 @@ Advantages of using NWSAPy
 Dependencies
 ============
 
-NWSAPy has minimal dependecies, with core functionality being pure python:
+NWSAPy has minimal dependencies, with core functionality being pure python:
 
 - shapely
 - pandas
@@ -73,7 +73,7 @@ NWSAPy has minimal dependecies, with core functionality being pure python:
 Contact
 =======
 
-It motivates me to continue support for this package if I hear from the community. If you have questions or comments relating to the package, you can email me at brandonmolyneaux@torandotalk.com. If a bug is identified, open an issue on GitHub.
+It motivates me to continue support and development for this package if I hear from the community. If you have questions or comments relating to the package, you can tweet at me: @WxBDM. If a bug is identified, open an issue on GitHub. If you'd like to contribute, please issue a pull request.
 
 Important Links
 ===============

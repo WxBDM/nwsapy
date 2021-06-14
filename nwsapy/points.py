@@ -77,16 +77,16 @@ class BasePoint(utils.ObjectIterator):
 
         new_point_obj = copy.deepcopy(self)
         if hasattr(self, 'distance'):
-            distance = new_point_obj.distance['value'] * unit_registry.meter
+            distance = self.distance['value'] * unit_registry.meter
             new_point_obj.distance = distance
             new_point_obj.series['distance'] = distance
         if hasattr(self, 'stations'):
-            for station in new_point_obj.stations:
+            for station in self.stations:
                 station_elevation = station.elevation['value'] * unit_registry.meter
                 station.elevation = station_elevation
                 station.series['elevation'] = station_elevation
         if hasattr(self, 'bearing'):
-            bearing = new_point_obj.bearing['value'] * unit_registry.degrees
+            bearing = self.bearing['value'] * unit_registry.degrees
             new_point_obj.bearing = bearing
             new_point_obj.series['bearing'] = bearing
 

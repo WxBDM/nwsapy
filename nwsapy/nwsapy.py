@@ -6,12 +6,11 @@ Radar, Products, etc).
 """
 import datetime
 from typing import Union
-from collections import OrderedDict
 
 import nwsapy.utils as utils
 import nwsapy.alerts as alerts
 import nwsapy.points as points
-import nwsapy.glossary as glossary  # don't put anyting after this, IDE gives weird error.
+import nwsapy.glossary as glossary  # don't put anything after this, IDE gives weird error.
 from nwsapy.errors import ParameterTypeError
 
 
@@ -64,10 +63,21 @@ class NWSAPy:
                        region_type: str = None, severity: list or str = None, start: datetime.datetime = None,
                        status: list or str = None, urgency: list or str = None, zone: list or str = None
                        ) -> alerts.AllAlerts:
-        """Fetches all active alerts from ``/alerts``.
+        """Fetches all alerts from ``/alerts``.
 
-        IMPORTANT: You must ensure capitalization is correct for area, event, message_type, region, region_type,
-            severity, status, urgency, and zone. See documentation for valid parameters.
+        **IMPORTANT:** You must ensure capitalization is correct for area, event, message_type, region, region_type,
+        severity, status, urgency, and zone. See documentation for valid parameters.
+
+        All parameters are defaulted to None. Each parameter that is supplied will reduce server latency, thus giving
+        you the request quicker.
+
+        Note: ``end`` and ``start`` is not implemented in v0.2.0. This will be implemented in the future. Adding these
+        parameters in will affect anything.
+
+        Returns
+        -------
+        :class:`alerts.AllAlerts`
+            An object that contains the information of all alerts.
 
         Parameters
         ----------
@@ -81,43 +91,115 @@ class NWSAPy:
         certainty: str or list[str]
             The certainty of the alert. Valid parameters: "observed", "likely", "possible", "unlikely", "unknown"
 
-        end: datetime.datetime (local time)
-            The ending time for all alerts. All alerts up to the ending time are included.
+        end: datetime.datetime
+            **Not implemented as of v0.2.0** The ending time for all alerts. All alerts up to the ending time are
+            included unless the ``start`` parameter is supplied.
 
         event: str or list[str]
             The type of alert (i.e. Severe Thunderstorm Warning, etc). Valid parameters are found on the data validation
-                table.
+            table.
 
         limit: int
             The number of alerts to return at most. Will only retrieve the first n alerts.
 
         message_type: str or list[str]
-            Either alert
+            Either alert, update, or cancel.
 
-        Returns
-        -------
-        :class:`alerts.AllAlerts`
-            An object that contains the information of all alerts.
+        point: list[float]
+            A tuple or list containing a latitude and longitude pair.
+
+        region: str or list[str]
+            A region where the alert resides. Valid data: AL, AT, GL, GM, PA, or PI.
+
+        region_type: str
+            The type of region where the alert resides. Valid data: land or marine.
+
+        severity: str or list[str]
+            The severity level of the alert. Valid data: extreme, severe, moderate, minor, unknown
+
+        start: datetime.datetime
+            **Not Implemented as of v0.2.0** A datetime object of when alerts begin. All alerts until current time are included
+            unless ``end`` parameter is supplied.
+
+        status: str or list[str]
+            The status of the alert. Valid data: actual, exercise, system, test, draft
+
+        urgency: str or list[str]
+            The urgency of the alert. Valid data: unknown, past, future, expected, immediate
+
+        zone: str or list[str]
+            The NWS zone of the alert. Note this has no validation checks, so a 404 error can occur.
         """
         self._check_user_agent()  # if user agent isn't set, print it
-        param_d = {'active': active, 'area': area, 'certainty': certainty, 'end': end, 'event': event,
+        param_d = {'active': active, 'area': area, 'certainty': certainty, 'end': None, 'event': event,
                    'limit': limit, 'message_type': message_type, 'point': point, 'region': region,
-                   'region_type': region_type, 'severity': severity, 'start': start, 'status': status,
+                   'region_type': region_type, 'severity': severity, 'start': None, 'status': status,
                    'urgency': urgency, 'zone': zone}
 
         utils.eliminate_none_in_param_d(param_d)  # gets rid of the "None"s from the parameters.
         return alerts.AllAlerts(self._user_agent_to_d, param_d)
 
-    def get_active_alerts(self) -> alerts.ActiveAlerts:
+    def get_active_alerts(self, area: list or str = None, certainty: list or str = None,
+                          event: list or str = None, limit: int = None,
+                          message_type: list or str = None, point: list = None, region: list or str = None,
+                          region_type: str = None, severity: list or str = None,
+                          status: list or str = None, urgency: list or str = None,
+                          zone: list or str = None) -> alerts.ActiveAlerts:
         """Fetches all active alerts from ``/alerts/active``.
 
         Returns
         -------
         alerts.ActiveAlerts
             An object that contains the information of the current alerts.
+
+        Parameters
+        ----------
+        area: str or list[str]
+            The area in which the alert is in. Valid parameters are typically the 2 letter abbreviation of the state
+            in upper case (i.e. "AL", "PA", etc)
+
+        certainty: str or list[str]
+            The certainty of the alert. Valid parameters: "observed", "likely", "possible", "unlikely", "unknown"
+
+        event: str or list[str]
+            The type of alert (i.e. Severe Thunderstorm Warning, etc). Valid parameters are found on the data validation
+            table.
+
+        limit: int
+            The number of alerts to return at most. Will only retrieve the first n alerts.
+
+        message_type: str or list[str]
+            Either alert, update, or cancel.
+
+        point: list[float]
+            A tuple or list containing a latitude and longitude pair.
+
+        region: str or list[str]
+            A region where the alert resides. Valid data: AL, AT, GL, GM, PA, or PI.
+
+        region_type: str
+            The type of region where the alert resides. Valid data: land or marine.
+
+        severity: str or list[str]
+            The severity level of the alert. Valid data: extreme, severe, moderate, minor, unknown
+
+        status: str or list[str]
+            The status of the alert. Valid data: actual, exercise, system, test, draft
+
+        urgency: str or list[str]
+            The urgency of the alert. Valid data: unknown, past, future, expected, immediate
+
+        zone: str or list[str]
+            The NWS zone of the alert. Note this has no validation checks, so a 404 error can occur.
         """
         self._check_user_agent()
-        return alerts.ActiveAlerts(self._user_agent_to_d)
+        param_d = {'area': area, 'certainty': certainty, 'event': event,
+                   'limit': limit, 'message_type': message_type, 'point': point, 'region': region,
+                   'region_type': region_type, 'severity': severity, 'status': status,
+                   'urgency': urgency, 'zone': zone}
+
+        utils.eliminate_none_in_param_d(param_d)  # gets rid of the "None"s from the parameters.
+        return alerts.ActiveAlerts(self._user_agent_to_d, param_d)
 
     def get_alert_types(self) -> alerts.AlertTypes:
         """Fetches the alert types from ``/alerts/types``.
