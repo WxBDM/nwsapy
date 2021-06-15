@@ -6,7 +6,7 @@ __pycache__/
 venv/
 .idea/
 */.DS_Store
-nwsapy/tests/package_test.py
+tests/package_test.py
 
 # C extensions
 *.so
