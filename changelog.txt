@@ -2,18 +2,23 @@ This document describes the changelog for all the different versions.
 
 Last updated: 6/16/21
 
-v0.2.0 (release: TBD)
+v0.2.0 (release: June 16, 2021)
+- The following endpoint groups (with nwsapy methods) have been implemented:
+    - points
+        - nwsapy.get_point()
+        - nwsapy.get_point_station()
+    - glossary
+        - nwsapy.get_glossary()
 - Documentation has been rebuilt and reorganized to make navigation easier.
 - Added make_request() to allow for the user to make their own requests. There are niche uses for this.
 - Added a to_dict() method to individual alerts and points.
-- `points` has been added: nwsapy.get_point(lat, lon) and nwsapy.get_point_stations(lat, lon).
-    - Pint was added in (to_pint()). This changes select units in all points objects.
-- `filter_by()` has been removed. This has been replaced by parameters being read into the function itself.
+- Added to_pint() to select endpoint objects.
+- An iterable class has been added to utilities to allow for scalability across endpoint groups.
+- Unittests has been introduced to help increase code quality and ensure code integrity.
+- `filter_by()` has been removed. This has been replaced by parameters being read into the nwsapy method.
 - .effective_utc, .send_utc, etc has been introduced as a new attribute for alerts
-- Removed to_utc() from alerts.
+- As a result, to_utc() has been removed from alerts.
 - Removed .multipoint from alerts.
-- Test, test, tests! Lots of tests have been introduced to increase the code quality.
-- nwsapy.get_glossary() has been implemented. That was easy! *knocks on wood*
 - Removed private variable `_count` for all alert objects. Has no purpose.
 - Removed data class from alerts. Why was this there? The world may never know.
 

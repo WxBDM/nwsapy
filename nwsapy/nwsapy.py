@@ -322,8 +322,21 @@ class NWSAPy:
         return glossary.Glossary(self._user_agent_to_d)
 
     def get_point(self, lat, lon):
-        """Gets a point from the API."""
+        """Gets a point from the API.
 
+        Returns
+        -------
+        :class:`points.Point`
+            An object containing information from /points
+
+        Parameters
+        ----------
+        lat: int or float
+            The latitude of the desired point. Rounded to the nearest 4th decimal place.
+
+        lon: int or float
+            The longitude of the desired point. Rounded to the nearest 4th decimal place.
+        """
         self._check_user_agent()
         return points.Point(lat, lon, self._user_agent_to_d)
 
@@ -334,6 +347,14 @@ class NWSAPy:
         -------
         :class:`points.PointStation`
             An object containing information from /points/stations
+
+        Parameters
+        ----------
+        lat: int or float
+            The latitude of the desired point. Rounded to the nearest 4th decimal place.
+
+        lon: int or float
+            The longitude of the desired point. Rounded to the nearest 4th decimal place.
         """
 
         self._check_user_agent()

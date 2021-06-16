@@ -103,14 +103,6 @@ class BasePoint(utils.ObjectIterator):
 class Point(BasePoint):
     r"""A class used to hold information about the points types found from ``/points``.
 
-    Parameters
-    ----------
-    lat: int or float
-        The latitude of the desired point. Rounded to the nearest 4th decimal place.
-
-    lon: int or float
-        The longitude of the desired point. Rounded to the nearest 4th decimal place.
-
     Attributes
     ----------
     bearing: dict or pint units
@@ -282,14 +274,6 @@ class Station:
 
 class PointStation(BasePoint):
     r"""A class used to hold information about the points types found from ``/points``.
-
-    Parameters
-    ----------
-    lat: int or float
-        The latitude of the desired point. Rounded to the nearest 4th decimal place.
-
-    lon: int or float
-        The longitude of the desired point. Rounded to the nearest 4th decimal place.
 
     Attributes
     ----------
