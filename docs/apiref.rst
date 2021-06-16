@@ -1,8 +1,6 @@
 API Reference
 =============
 
-Each section below contains information about the module, what functions to call from the main NWSAPy package, and what NWSAPy object is returned.
-
 Table of Contents: Endpoints
 ----------------------------
 
@@ -24,5 +22,6 @@ Table of Contents: Endpoints
 NWSAPy Methods
 --------------
 
-.. autoclass:: nwsapy.nwsapy.NWSAPy( )
+.. py:currentmodule:: nwsapy
+.. autoclass:: nwsapy.NWSAPy
     :members:
