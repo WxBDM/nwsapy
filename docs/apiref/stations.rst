@@ -1,6 +1,3 @@
-Stations Module
-===============
-
-This module is designed to fetch and organize the requests coming from ``/stations/...``.
-
-This module has yet to be implemented.
+Stations
+========
+This has not been implemented as of the most recent version. Stay tuned!

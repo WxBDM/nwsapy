@@ -1,7 +1,4 @@
-Icons Module
-============
-
-This module is designed to fetch and organize the requests coming from ``/icons/...``.
-
-This module has yet to be implemented.
+Icons
+=====
+This has not been implemented as of the most recent version. Stay tuned!
 

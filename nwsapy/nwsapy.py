@@ -4,25 +4,29 @@ With how this API is designed, you should be using these functions to access all
 Radar, Products, etc).
 
 """
+import datetime
 from typing import Union
+
+import nwsapy.utils as utils
 import nwsapy.alerts as alerts
-import nwsapy.glossary as glossary
+import nwsapy.points as points
+import nwsapy.glossary as glossary  # don't put anything after this, IDE gives weird error.
 from nwsapy.errors import ParameterTypeError
+
 
 # needed: https://api.weather.gov/openapi.json
 
 
 class NWSAPy:
-
     _app = None
     _contact = None
-    _user_agent = "(NWSAPy, test@test.com)"
-    _user_agent_to_d = {'User-Agent' : _user_agent}
+    _user_agent = "(no app name set, no email set)"
+    _user_agent_to_d = {'User-Agent': _user_agent}
 
     def _check_user_agent(self):
-        if self._user_agent == "(NWSAPy, test@test.com)":
-            print("Be sure to set the user agent. To prevent this message from appearing"
-                  " again, use: nwsapy.set_user_agent(app_name, contact)")
+        if self._user_agent == "(no app name set, no email set)":
+            print(f"Be sure to set the user agent before calling any nwsapy functions. To prevent this message from "
+                  f"appearing again, use: nwsapy.set_user_agent(app_name, email)")
 
     def set_user_agent(self, app_name, contact):
         """Sets the User-Agent in header for requests. This should be unique to your application.
@@ -51,29 +55,151 @@ class NWSAPy:
         self._app = app_name
         self._contact = contact
         self._user_agent = f"({self._app}, {contact})"
-        self._user_agent_to_d = dict({'User-Agent' : self._user_agent})
+        self._user_agent_to_d = dict({'User-Agent': self._user_agent})
 
-    def get_all_alerts(self) -> alerts.AllAlerts:
-        """Fetches all active alerts from ``/alerts``.
+    def get_all_alerts(self, active: bool = None, area: list or str = None, certainty: list or str = None,
+                       end: datetime.datetime = None, event: list or str = None, limit: int = None,
+                       message_type: list or str = None, point: list = None, region: list or str = None,
+                       region_type: str = None, severity: list or str = None, start: datetime.datetime = None,
+                       status: list or str = None, urgency: list or str = None, zone: list or str = None
+                       ) -> alerts.AllAlerts:
+        """Fetches all alerts from ``/alerts``.
+
+        **IMPORTANT:** You must ensure capitalization is correct for area, event, message_type, region, region_type,
+        severity, status, urgency, and zone. See documentation for valid parameters.
+
+        All parameters are defaulted to None. Each parameter that is supplied will reduce server latency, thus giving
+        you the request quicker.
+
+        Note: ``end`` and ``start`` is not implemented in v0.2.0. This will be implemented in the future. Adding these
+        parameters in will affect anything.
 
         Returns
         -------
         :class:`alerts.AllAlerts`
             An object that contains the information of all alerts.
-        """
-        self._check_user_agent()
-        return alerts.AllAlerts(self._user_agent_to_d)
 
-    def get_active_alerts(self) -> alerts.ActiveAlerts:
+        Parameters
+        ----------
+        active: bool
+            If the alert is active or not.
+
+        area: str or list[str]
+            The area in which the alert is in. Valid parameters are typically the 2 letter abbreviation of the state
+            in upper case (i.e. "AL", "PA", etc)
+
+        certainty: str or list[str]
+            The certainty of the alert. Valid parameters: "observed", "likely", "possible", "unlikely", "unknown"
+
+        end: datetime.datetime
+            **Not implemented as of v0.2.0** The ending time for all alerts. All alerts up to the ending time are
+            included unless the ``start`` parameter is supplied.
+
+        event: str or list[str]
+            The type of alert (i.e. Severe Thunderstorm Warning, etc). Valid parameters are found on the data validation
+            table.
+
+        limit: int
+            The number of alerts to return at most. Will only retrieve the first n alerts.
+
+        message_type: str or list[str]
+            Either alert, update, or cancel.
+
+        point: list[float]
+            A tuple or list containing a latitude and longitude pair.
+
+        region: str or list[str]
+            A region where the alert resides. Valid data: AL, AT, GL, GM, PA, or PI.
+
+        region_type: str
+            The type of region where the alert resides. Valid data: land or marine.
+
+        severity: str or list[str]
+            The severity level of the alert. Valid data: extreme, severe, moderate, minor, unknown
+
+        start: datetime.datetime
+            **Not Implemented as of v0.2.0** A datetime object of when alerts begin. All alerts until current time are included
+            unless ``end`` parameter is supplied.
+
+        status: str or list[str]
+            The status of the alert. Valid data: actual, exercise, system, test, draft
+
+        urgency: str or list[str]
+            The urgency of the alert. Valid data: unknown, past, future, expected, immediate
+
+        zone: str or list[str]
+            The NWS zone of the alert. Note this has no validation checks, so a 404 error can occur.
+        """
+        self._check_user_agent()  # if user agent isn't set, print it
+        param_d = {'active': active, 'area': area, 'certainty': certainty, 'end': None, 'event': event,
+                   'limit': limit, 'message_type': message_type, 'point': point, 'region': region,
+                   'region_type': region_type, 'severity': severity, 'start': None, 'status': status,
+                   'urgency': urgency, 'zone': zone}
+
+        utils.eliminate_none_in_param_d(param_d)  # gets rid of the "None"s from the parameters.
+        return alerts.AllAlerts(self._user_agent_to_d, param_d)
+
+    def get_active_alerts(self, area: list or str = None, certainty: list or str = None,
+                          event: list or str = None, limit: int = None,
+                          message_type: list or str = None, point: list = None, region: list or str = None,
+                          region_type: str = None, severity: list or str = None,
+                          status: list or str = None, urgency: list or str = None,
+                          zone: list or str = None) -> alerts.ActiveAlerts:
         """Fetches all active alerts from ``/alerts/active``.
 
         Returns
         -------
         alerts.ActiveAlerts
             An object that contains the information of the current alerts.
+
+        Parameters
+        ----------
+        area: str or list[str]
+            The area in which the alert is in. Valid parameters are typically the 2 letter abbreviation of the state
+            in upper case (i.e. "AL", "PA", etc)
+
+        certainty: str or list[str]
+            The certainty of the alert. Valid parameters: "observed", "likely", "possible", "unlikely", "unknown"
+
+        event: str or list[str]
+            The type of alert (i.e. Severe Thunderstorm Warning, etc). Valid parameters are found on the data validation
+            table.
+
+        limit: int
+            The number of alerts to return at most. Will only retrieve the first n alerts.
+
+        message_type: str or list[str]
+            Either alert, update, or cancel.
+
+        point: list[float]
+            A tuple or list containing a latitude and longitude pair.
+
+        region: str or list[str]
+            A region where the alert resides. Valid data: AL, AT, GL, GM, PA, or PI.
+
+        region_type: str
+            The type of region where the alert resides. Valid data: land or marine.
+
+        severity: str or list[str]
+            The severity level of the alert. Valid data: extreme, severe, moderate, minor, unknown
+
+        status: str or list[str]
+            The status of the alert. Valid data: actual, exercise, system, test, draft
+
+        urgency: str or list[str]
+            The urgency of the alert. Valid data: unknown, past, future, expected, immediate
+
+        zone: str or list[str]
+            The NWS zone of the alert. Note this has no validation checks, so a 404 error can occur.
         """
         self._check_user_agent()
-        return alerts.ActiveAlerts(self._user_agent_to_d)
+        param_d = {'area': area, 'certainty': certainty, 'event': event,
+                   'limit': limit, 'message_type': message_type, 'point': point, 'region': region,
+                   'region_type': region_type, 'severity': severity, 'status': status,
+                   'urgency': urgency, 'zone': zone}
+
+        utils.eliminate_none_in_param_d(param_d)  # gets rid of the "None"s from the parameters.
+        return alerts.ActiveAlerts(self._user_agent_to_d, param_d)
 
     def get_alert_types(self) -> alerts.AlertTypes:
         """Fetches the alert types from ``/alerts/types``.
@@ -195,3 +321,60 @@ class NWSAPy:
         self._check_user_agent()
         return glossary.Glossary(self._user_agent_to_d)
 
+    def get_point(self, lat, lon):
+        """Gets a point from the API.
+
+        Returns
+        -------
+        :class:`points.Point`
+            An object containing information from /points
+
+        Parameters
+        ----------
+        lat: int or float
+            The latitude of the desired point. Rounded to the nearest 4th decimal place.
+
+        lon: int or float
+            The longitude of the desired point. Rounded to the nearest 4th decimal place.
+        """
+        self._check_user_agent()
+        return points.Point(lat, lon, self._user_agent_to_d)
+
+    def get_point_station(self, lat, lon):
+        """Retrieves a point's station information.
+
+        Returns
+        -------
+        :class:`points.PointStation`
+            An object containing information from /points/stations
+
+        Parameters
+        ----------
+        lat: int or float
+            The latitude of the desired point. Rounded to the nearest 4th decimal place.
+
+        lon: int or float
+            The longitude of the desired point. Rounded to the nearest 4th decimal place.
+        """
+
+        self._check_user_agent()
+        return points.PointStation(lat, lon, self._user_agent_to_d)
+
+    def make_request(self, url):
+        """Allows for the user to make a request given a URL.
+
+        Note
+        ----
+            This does not have any kind of data validation checks, and does not handle any errors for you. This method
+            allows you to handle the response data in its entirety.
+
+        Returns
+        -------
+        request_d: dict
+            A dictionary that contains information about the request.
+        """
+        self._check_user_agent()
+        response = utils.request(url, headers=self._user_agent_to_d)
+        request_d = response.json()
+        request_d['response_headers'] = response.headers
+        return request_d

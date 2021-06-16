@@ -1,8 +1,5 @@
-Gridpoints Module
-=================
+Gridpoints
+==========
 
-This module is designed to fetch and organize the requests coming from ``/gridpoints/...``.
-
-This module has yet to be implemented.
-
+This has not been implemented as of the most recent version. Stay tuned!
 

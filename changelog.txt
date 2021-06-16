@@ -1,0 +1,32 @@
+This document describes the changelog for all the different versions.
+
+Last updated: 6/16/21
+
+v0.2.0 (release: June 16, 2021)
+- The following endpoint groups (with nwsapy methods) have been implemented:
+    - points
+        - nwsapy.get_point()
+        - nwsapy.get_point_station()
+    - glossary
+        - nwsapy.get_glossary()
+- Documentation has been rebuilt and reorganized to make navigation easier.
+- Added make_request() to allow for the user to make their own requests. There are niche uses for this.
+- Added a to_dict() method to individual alerts and points.
+- Added to_pint() to select endpoint objects.
+- An iterable class has been added to utilities to allow for scalability across endpoint groups.
+- Unittests has been introduced to help increase code quality and ensure code integrity.
+- `filter_by()` has been removed. This has been replaced by parameters being read into the nwsapy method.
+- .effective_utc, .send_utc, etc has been introduced as a new attribute for alerts
+- As a result, to_utc() has been removed from alerts.
+- Removed .multipoint from alerts.
+- Removed private variable `_count` for all alert objects. Has no purpose.
+- Removed data class from alerts. Why was this there? The world may never know.
+
+v0.1.0 (release: May 17, 2021)
+- Documentation follows how Pandas documentation is laid out.
+- Alerts module is implemented in it's full.
+- Documentation is put on readthedocs
+- Uploaded to pypi
+
+
+

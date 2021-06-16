@@ -1,7 +1,40 @@
 """Utility file."""
-
+import copy
+import json
 import requests
 from requests.exceptions import HTTPError
+
+
+class ErrorObject:
+    # Can't put docstring here, sphinx won't recognize it >:(
+    def __init__(self, response):
+        response = json.loads(response.text)
+        for k, v in response.items():  # the response text is going to allow us to see the response from the API
+            setattr(self, k, v)
+
+
+class ObjectIterator:
+
+    def __iter__(self):
+        """Allows for iteration though object."""
+        self._index = 0
+        return self
+
+    def __next__(self):
+        """Allows for iteration through object."""
+        if self._index < len(self._iterable):
+            val = self._iterable[self._index]
+            self._index += 1
+            return val
+        else:
+            raise StopIteration
+
+    def __getitem__(self, index):
+        """Allows for object to be directly indexable."""
+        return self._iterable[index]
+
+    def __len__(self):
+        return len(self._iterable)
 
 
 def request(url, headers):
@@ -9,31 +42,12 @@ def request(url, headers):
     # list of URLs: https://www.weather.gov/documentation/services-web-api#/
 
     try:
-        response = requests.get(url, headers = headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
     except HTTPError:
         # Possible error message: requests.exceptions.HTTPError: 503 Server Error:
         #   Service Unavailable for url: https://api.weather.gov/alerts/active
-        if response.status_code == 503:
-            error_obj = type('error', (), {'event' : 'error',
-                                           'status_code' : 503,
-                                           'description' : 'Service unavailable',
-                                           'headers' : response.headers
-                                           }
-                             )
-        elif response.status_code == 404:
-            error_obj = type('error', (), {'event' : 'error',
-                                           'status_code' : 404,
-                                           'description' : 'Not found',
-                                           'headers' : response.headers
-                                           }
-                             )
-        else:
-            query = response.json()
-            query.update({'event' : 'error'})  # this is added to be more flush with the code.
-            error_obj = type("error", (), query)
-
-        return error_obj()
+        return response
     except Exception as err:
         raise Exception(f'Other error occurred: {err}')
 
@@ -74,3 +88,21 @@ def valid_products():
             'Wind Advisory', 'Wind Chill Advisory', 'Wind Chill Warning', 'Wind Chill Watch', 'Winter Storm Warning',
             'Winter Storm Watch', 'Winter Weather Advisory']
 
+
+def valid_areas():
+    return ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'GU', 'HI', 'ID', 'IL',
+            'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
+            'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT',
+            'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY', 'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS',
+            'LM', 'LH', 'LC', 'LE', 'LO']
+
+
+def eliminate_none_in_param_d(params):
+    itr = copy.deepcopy(params)
+    for key, value in itr.items():
+        if value is None:
+            params.pop(key)
+
+
+def valid_zones():
+    return []
