@@ -1,17 +1,14 @@
 This document describes the changelog for all the different versions.
 
-Last updated: 6/10/21
+Last updated: 6/16/21
 
 v0.2.0 (release: TBD)
+- Documentation has been rebuilt and reorganized to make navigation easier.
+- Added make_request() to allow for the user to make their own requests. There are niche uses for this.
 - Added a to_dict() method to individual alerts and points.
 - `points` has been added: nwsapy.get_point(lat, lon) and nwsapy.get_point_stations(lat, lon).
     - Pint was added in (to_pint()). This changes select units in all points objects.
-- `filter_by()` for alerts has been severely built upon:
-    - Includes data type checking to ensure that the data types are correctly formatted.
-    - Allows you to filter based upon the attributes in the individual objects.
-    - When called, it will give a copy of the object, following what pandas does with dataframes.
-        - This means filter_by() does not return a list.
-        - To keep it backwards compatible, all endpoint objects are iterable.
+- `filter_by()` has been removed. This has been replaced by parameters being read into the function itself.
 - .effective_utc, .send_utc, etc has been introduced as a new attribute for alerts
 - Removed to_utc() from alerts.
 - Removed .multipoint from alerts.

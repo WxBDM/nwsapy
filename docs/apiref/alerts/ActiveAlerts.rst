@@ -22,6 +22,15 @@ The ``ActiveAlert`` object is iterable and indexable:
 
     first_warning = svr_tstorms[0]
 
+The ``ActiveAlerts`` object is comprised of Individual Alert objects.
+
+The methods that are implemented for :class:`ActiveAlerts` are::
+
+    to_dataframe()
+    to_dict()
+
+This endpoint in the NWS API does take parameters. As such, APy provides a way to use these parameters in a pythonic manner to reduce server latency. See the API reference for details on the various parameters and the data types/structures associated with them. Note that APy does include data type and structure checking to minimize 404 errors from the API.
+
 Example Usage: Active Alerts
 ----------------------------
 This section provides a few examples on using ``nwsapy.get_active_alerts()``, as well as an example using the individual alerts. To see more examples with using individual alerts, see the Individual Alerts page.
@@ -52,8 +61,7 @@ ValueError: Incompatible parameters, ensure only one exists: area, point, region
 
 Multiple Events: Active Alerts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-But for some reason, it interests you to have not only the excessive heat warnings, but also the severe thunderstorm warnings. You can do so as such:
+Let's say that you only want excessive heat warnings and severe thunderstorm warnings. You can do so as such:
 
 .. code-block:: python
 
@@ -80,5 +88,5 @@ Class: alerts.ActiveAlerts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: nwsapy.alerts.ActiveAlerts( )
-	:inherited-members:
-	:members:
+    :inherited-members:
+    :members:

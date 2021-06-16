@@ -47,17 +47,15 @@ Table of Contents
    :maxdepth: 1
    
    Getting Started <gettingstarted>
-   Examples <examples>
    API Reference <apiref>
 
 Advantages of using NWSAPy
 ==========================
 - **Clean and Simplistic Code** - The syntax is very english-like.
 - **No worries about JSON**. NWSAPy takes care of anything JSON-related, including formats (GeoJSON, JSON-LD, etc).
-- **No worries about URLs**. NWSAPy also takes care of handling request URL's
+- **No worries about URLs**. Similar to the Django ORM, you're able to make a request without ever writing code to make a request.
 - **404 Error Minimization.** This is handled through data validation checks, as well as handling URL construction.
 - **Response errors are handled.** Response errors are handled appropriately.
-- **Consistency matters.** Even if the response doesn't have a specific attribute, NWSAPy makes sure *something* exists so your code doesn't break.
 
 Dependencies
 ============
@@ -73,12 +71,15 @@ NWSAPy has minimal dependencies, with core functionality being pure python:
 Contact
 =======
 
-It motivates me to continue support and development for this package if I hear from the community. If you have questions or comments relating to the package, you can tweet at me: @WxBDM. If a bug is identified, open an issue on GitHub. If you'd like to contribute, please issue a pull request.
+It motivates me to continue support and development for this package if I hear from the community. If you have questions or comments relating to the package, you can tweet at me: @WxBDM. If a bug is identified, open an issue on GitHub. Please provide steps on how to recreate the issue with an example. If you'd like to contribute, please issue a pull request.
 
 Important Links
 ===============
 
 - `GitHub <https://github.com/WxBDM/nwsapy>`_
+- `National Weather Service API Documentation <https://www.weather.gov/documentation/services-web-api>`_
+- `National Weather Service API <https://api.weather.gov/>`_
+- `National Weather Service API Discussion <https://github.com/weather-gov/api/discussions>`_
 
 Indices and tables
 ==================

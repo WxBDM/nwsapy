@@ -2,6 +2,8 @@
 Getting Started
 ===============
 
+.. currentmodule:: nwsapy
+
 Installation
 ------------
 
@@ -29,21 +31,53 @@ Note: The NWS API does require a ``User Agent``, as this is a form of authentica
 
 APy gives functionality so that you're able to set this field (and other kinds of header information). See https://www.weather.gov/documentation/services-web-api#/ for more information regarding the User Agent and other header fields.
 
+I want to...
+------------
+
+Get watches and warnings
+^^^^^^^^^^^^^^^^^^^^^^^^
+The API provides a way for you to get various alerts. The table below provides a reference as to which methods to call:
+
++-----------------------------------------+---------------------------------------------+
+| Description                             | NWSAPy Method                               |
++=========================================+=============================================+
+| Get all of the alerts.                  | :meth:`nwsapy.get_all_alerts()`             |
++-----------------------------------------+---------------------------------------------+
+| Get the current active alerts.          | :meth:`nwsapy.get_active_alerts()`          |
++-----------------------------------------+---------------------------------------------+
+| Get all the types of alerts.            | :meth:`nwsapy.get_alert_types()`            |
++-----------------------------------------+---------------------------------------------+
+| Get active alerts by their ID.          | :meth:`nwsapy.get_alert_by_id()`            |
++-----------------------------------------+---------------------------------------------+
+| Get the number of active alerts.        | :meth:`nwsapy.get_alert_count()`            |
++-----------------------------------------+---------------------------------------------+
+| Get the active alerts by zone.          | :meth:`nwsapy.get_alert_by_zone()`          |
++-----------------------------------------+---------------------------------------------+
+| Get the active alerts by area.          | :meth:`nwsapy.get_alert_by_area()`          |
++-----------------------------------------+---------------------------------------------+
+| Get the active alerts by marine region. | :meth:`nwsapy.get_alert_by_marine_region()` |
++-----------------------------------------+---------------------------------------------+
+
+Get the forecast for a specific lat/lon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This functionality has not been implemented directly as of v0.2.0. In a near future version, it will be implemented.
+
+Get definitions of words I don't understand!
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+No worries, the API does provide a glossary for you: :meth:`nwsapy.get_glossary()`.
+
 Rate Limit
 ----------
 When using this package, you may encounter the rate limit. This is a limit in which the maintainers of the API have set. If you encounter this, wait 30 seconds before trying again.
 
 Understanding the Docs
 ----------------------
-
-The API Reference is a blend of both explanations and pure reference. It's broken down into tags based off of how the NWS API is set up (i.e. ``/alerts``, ``/stations``, ``/radar``, etc), which are called ``modules`` (not to be confused with Python modules). The layout and format of this documentation follows how pandas is laid out.
-
-The top-most page (i.e. ``Alerts``, ``Glossary``, ``Gridpoints``, etc) contains explanations on what the module does, what URL's are requested, and any "Data Validation" table. When expanded on the left side, it will show all ``nwsapy`` functions associated with the module. These functions will return an instantiated object, which the methods associated with the object are shown when expanded upon.
+The API Reference is a blend of both explanations and pure reference. Each page begins with an introduction and shows a few examples on how to use the appropriate function. It also provides an explanation of the object that is returned from the function.
 
 Data Validation
 ---------------
 
-If there are any parameters for any ``nwsapy`` method, a data validation table will be provided at the top-most level of the module (i.e. ``Alerts``, ``Glossary``, etc). To simply put, data validation tables give you a way to make sure that your parameters are formatted properly to minimize 404 errors.
+If there are any parameters for any ``nwsapy`` method, the parameters will be validated against Data Validation Tables listed in the documentation. These tables are
 
 .. important::
 

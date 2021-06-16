@@ -338,3 +338,22 @@ class NWSAPy:
 
         self._check_user_agent()
         return points.PointStation(lat, lon, self._user_agent_to_d)
+
+    def make_request(self, url):
+        """Allows for the user to make a request given a URL.
+
+        Note
+        ----
+            This does not have any kind of data validation checks, and does not handle any errors for you. This method
+            allows you to handle the response data in its entirety.
+
+        Returns
+        -------
+        request_d: dict
+            A dictionary that contains information about the request.
+        """
+        self._check_user_agent()
+        response = utils.request(url, headers=self._user_agent_to_d)
+        request_d = response.json()
+        request_d['response_headers'] = response.headers
+        return request_d

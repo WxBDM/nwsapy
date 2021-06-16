@@ -56,11 +56,11 @@ API Reference: Alert Count
 --------------------------
 Method: get_alert_count
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automethod:: nwsapy.get_alert_count
+.. automethod:: nwsapy.get_alert_count( )
 
 Class: AlertByCount
 ^^^^^^^^^^^^^^^^^^^
-.. autoclass:: nwsapy.alerts.AlertByCount
+.. autoclass:: nwsapy.alerts.AlertByCount( )
 	:members:
 
 

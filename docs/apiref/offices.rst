@@ -1,6 +1,3 @@
-Offices Module
-==============
-
-This module is designed to fetch and organize the requests coming from ``/offices/...``.
-
-This module has yet to be implemented.
+Offices
+=======
+This has not been implemented as of the most recent version. Stay tuned!

@@ -13,9 +13,7 @@ Specifically, this module holds classes for the following urls:
 
 You can find the API documentation here: https://www.weather.gov/documentation/services-web-api#/
 """
-from typing import Union
 import copy
-
 import shapely
 from shapely.geometry import Point
 from datetime import datetime
@@ -80,7 +78,7 @@ class IndividualAlert:
         When the alert ends (local time)
 
     ends_utc: datetime.datetime or None
-        When the alert ends (local time)
+        When the alert ends (UTC time)
 
     event: str
         The event of which this alert is (used as the object type)
@@ -89,7 +87,7 @@ class IndividualAlert:
         When the alert ends (local time)
 
     expires_utc: datetime.datetime or None
-        When the alert ends (local time)
+        When the alert ends (UTC time)
 
     geocode: dict
 
@@ -214,8 +212,23 @@ class IndividualAlert:
         series = pd.Series(series_d)
         return series
 
+    def to_dict(self):
+        r"""Converts all of the attributes to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary containing all of the attributes of the object.
+        """
+        return self.__dict__
+
     def sent_before(self, other):
         """Method to compare sent times. All times are compared in UTC.
+
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
 
         Returns
         -------
@@ -226,6 +239,11 @@ class IndividualAlert:
     def sent_after(self, other):
         """Method to compare sent times. All times are compared in UTC.
 
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
+
         Returns
         -------
         bool
@@ -234,6 +252,11 @@ class IndividualAlert:
 
     def effective_before(self, other):
         """Method to compare effective times. All times are compared in UTC.
+
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
 
         Returns
         -------
@@ -244,6 +267,11 @@ class IndividualAlert:
     def effective_after(self, other):
         """Method to compare effective times. All times are compared in UTC.
 
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
+
         Returns
         -------
         bool
@@ -252,6 +280,11 @@ class IndividualAlert:
 
     def onset_before(self, other):
         """Method to compare onset times. All times are compared in UTC.
+
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
 
         Returns
         -------
@@ -262,6 +295,11 @@ class IndividualAlert:
     def onset_after(self, other):
         """Method to compare onset times. All times are compared in UTC.
 
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
+
         Returns
         -------
         bool
@@ -270,6 +308,11 @@ class IndividualAlert:
 
     def expires_before(self, other):
         """Method to compare expire times. All times are compared in UTC.
+
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
 
         Returns
         -------
@@ -280,6 +323,11 @@ class IndividualAlert:
     def expires_after(self, other):
         """Method to compare expire times. All times are compared in UTC.
 
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
+
         Returns
         -------
         bool
@@ -289,6 +337,11 @@ class IndividualAlert:
     def ends_before(self, other):
         """Method to compare end times. All times are compared in UTC.
 
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
+
         Returns
         -------
         bool
@@ -297,6 +350,11 @@ class IndividualAlert:
 
     def ends_after(self, other):
         """Method to compare end times. All times are compared in UTC.
+
+        Parameters
+        ----------
+        other: alerts.IndividualAlert
+            Another individual alert object.
 
         Returns
         -------
@@ -514,11 +572,6 @@ class AlertByMarineRegion(BaseAlert):
 
 class AlertByArea(BaseAlert):
     r"""A class used to hold information about all active alerts found from ``alerts/active/area/{area}``.
-
-    Each alert is it's own object type that is stored in a list (``self.alerts``). That is:
-        A tornado warning alert would be a tornadowarning object.
-
-        A small craft advisory alert would be a smallcraftadvisory object.
 
     Attributes
     ----------

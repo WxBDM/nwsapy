@@ -29,6 +29,16 @@ class GlossaryError(utils.ErrorObject):
 
 
 class Glossary(utils.ObjectIterator):
+    """Glossary object for ``/glossary``.
+
+    Attributes
+    ----------
+    response_headers: requests.structures.CaseInsensitiveDict
+        A dictionary containing the response headers.
+
+    terms: dict
+        A dictionary to hold the information regarding the glossary.
+    """
 
     n_errors = 0
     has_any_request_errors = False
@@ -44,7 +54,6 @@ class Glossary(utils.ObjectIterator):
             for element in response.json()['glossary']:
                 self.terms[element['term']] = element['definition']
 
-        self._itr = list(self.terms.keys()) # make it iterable through keys list.
         self.response_headers = response.headers  # requests.structures.CaseInsensitiveDict
 
     # Utilities iterator only works for lists/tuples, not dictionaries.
@@ -55,8 +64,8 @@ class Glossary(utils.ObjectIterator):
 
     def __next__(self):
         """Allows for iteration through self.alerts."""
-        if self._terms_index < len(self._itr):
-            val = self._itr[self._terms_index]
+        if self._terms_index < len(self.terms):
+            val = self.terms[self._terms_index]
             self._terms_index += 1
             return val
         else:

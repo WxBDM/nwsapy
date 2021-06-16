@@ -1,7 +1,7 @@
 Alerts
 ======
 
-The alerts module retrieves information from ``/alerts/...``. More specifically, this provides objects for the following endpoints:
+The methods that retrieves alerts gets information from the following endpoints:
 
     | ``/alerts``
     | ``/alerts/active``
@@ -12,8 +12,8 @@ The alerts module retrieves information from ``/alerts/...``. More specifically,
     | ``/alerts/active/area/{area}``
     | ``/alerts/active/region/{region}``
 
-API Endpoint
-------------
+API Endpoint: Alerts
+--------------------
 
 The following table shows all alert-related NWSAPy functions are and what the equivalent API endpoint it is.
 
@@ -63,22 +63,18 @@ Most Alert objects are...
     print(all_alerts[1])
     print(all_alerts[-1])
 
-
-Alerts Table of Contents
-------------------------
-
 .. toctree::
     :hidden:
     :maxdepth: 1
 
+    All Alerts <AllAlerts>
+    Active Alerts <ActiveAlerts>
+    Alert Type <AlertTypes>
+    Alert by Id <AlertById>
+    Alert by Count <AlertByCount>
+    Alert by Zone <AlertByZone>
+    Alert by Area <AlertByArea>
+    Alert by Marine Region <AlertByMarineRegion>
     Individual Alerts <IndividualAlerts>
-    alerts.AllAlerts <AllAlerts>
-    alerts.ActiveAlerts <ActiveAlerts>
-    alerts.AlertType <AlertTypes>
-    alerts.AlertById <AlertById>
-    alerts.AlertByCount <AlertByCount>
-    alerts.AlertByZone <AlertByZone>
-    alerts.AlertByArea <AlertByArea>
-    alerts.AlertByMarineRegion <AlertByMarineRegion>
     Data Validation Tables <datavalidationtables>
     Alert Errors <Error>

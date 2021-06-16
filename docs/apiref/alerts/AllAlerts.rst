@@ -149,17 +149,6 @@ But now, you're only interested in these events only in Utah and Ohio:
 
 This will get you all severe thunderstorm warnings and excessive heat warnings in both Ohio and Utah.
 
-Avoid Doing This: All Alerts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To limit potential to hit the rate limit set by the API maintainers, you want to only call this method as few times as possible. Let's say you're looking to isolate excessive heat warnings issued by NWS Salt Lake City and severe thunderstorm warnings issued by NWS Charleston, WV. Make one ``get()`` method call, and then parse locally.
-
-Although easier, try to avoid doing this if you're scaling your application:
-
-.. code-block:: python
-
-    alerts_in_utah = nwsapy.get_all_alerts(active = True, area = "UT", event = "Excessive Heat Warning")
-    alerts_in_pa = nwsapy.get_all_alerts(active = True, area = "WV", sender = "Severe Thunderstorm Warning")
-
 API Reference: All Alerts
 -------------------------
 As of v0.2.0, **all parameters are case sensitive**. If you receive an error, it is likely due to this.
