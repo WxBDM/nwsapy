@@ -82,7 +82,7 @@ Method: get_active_alerts
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. currentmodule:: nwsapy
-.. automethod:: nwsapy.get_active_alerts(area, certainty, event, limit, message_type, point, region, region_type, severity, status, urgency, zone)
+.. automethod:: nwsapy.get_active_alerts
 
 Class: alerts.ActiveAlerts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
