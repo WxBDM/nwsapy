@@ -161,11 +161,11 @@ As of v0.2.0, **all parameters are case sensitive**. If you receive an error, it
 Method: get_all_alerts
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. automethod:: nwsapy.get_all_alerts(active, area, certainty, end, event, limit, message_type, point, region, region_type, severity, start, status, urgency, zone)
+.. automethod:: nwsapy.get_all_alerts
 
 Class: AllAlerts
 ^^^^^^^^^^^^^^^^
 .. autoclass:: nwsapy.alerts.AllAlerts( )
-	:inherited-members:
-	:members:
+    :inherited-members:
+    :members:
 

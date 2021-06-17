@@ -1,17 +1,23 @@
-# NWS-APy: An Object-Oriented Approach to the National Weather Service API
+# NWS-APy: A Pythonic Implementation of the National Weather Service API
 
-NWS-APy takes an object-oriented approach to retrieving (GET) and organizing data using the National Weather Service API (found here: https://www.weather.gov/documentation/services-web-api#/)
+NWS-APy (APy for short) takes a pythonic approach to retrieving (GET) and organizing data using the National Weather Service API (found here: https://www.weather.gov/documentation/services-web-api#/)
 
-There's a few advantages to using this package:
-- **Clean and Simplistic Code** - The syntax is very english-like.
-- **No worries about JSON**. NWSAPy takes care of anything JSON-related, including formats (GeoJSON, JSON-LD, etc).
-- **404 Error Minimization.** This is handled through data validation checks, as well as handling URL construction.
-- **Response errors are handled.** Response errors are handled appropriately.
-- **Consistency matters.** Even if the response doesn't have a specific attribute, NWSAPy makes sure *something* exists so your code doesn't break.
+There are 3 goals that the package aims to achieve:
+- Keep clean, simplistic, minimalistic, and consistent code on the user end.
+- Minimize potential 404/500 errors and knowledge overhead.
+- Format output to popular meteorological data types.
 
-As a visual example, the left side of the image below is a typical JSON response from the API. NWSAPy takes this and converts it into an object, as shown on the right. There are also built-in methods to help with filtering, counting, and even converting the information into a dataframe.
+## A simple example
 
-![This is a test](./docs/_static/json_to_obj.png)
+APy is designed to be simple and easy to use. For example, if we wanted to get all of the tornado warnings in Oklahoma and just display the headline:
+
+```python
+from nwsapy import nwsapy
+
+tor_warnings_in_ok = nwsapy.get_active_alerts(event = "Tornado Warning", area = "OK")
+for warning in tor_warnings_in_ok:
+    print(warning.headline)
+```
 
 ## Documentation
 

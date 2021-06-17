@@ -22,6 +22,6 @@ Table of Contents: Endpoints
 NWSAPy Methods
 --------------
 
-.. py:currentmodule:: nwsapy
-.. autoclass:: nwsapy.NWSAPy
+.. currentmodule:: nwsapy
+.. autoclass:: NWSAPy
     :members:

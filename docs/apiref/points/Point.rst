@@ -57,11 +57,11 @@ API Reference: Point
 
 Method: get_point
 ^^^^^^^^^^^^^^^^^
-.. automethod:: nwsapy.get_point(lat, lon)
+.. automethod:: nwsapy.get_point
 
 Class: points.Point
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: nwsapy.points.Point( )
+.. autoclass:: nwsapy.points.Point
     :inherited-members:
     :members:
