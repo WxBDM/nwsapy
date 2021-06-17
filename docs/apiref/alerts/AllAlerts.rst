@@ -168,4 +168,3 @@ Class: AllAlerts
 .. autoclass:: nwsapy.alerts.AllAlerts( )
     :inherited-members:
     :members:
-
