@@ -8,7 +8,16 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-version = "0.2.0"
+version = "0.2.1"
+
+# Steps to release a new version:
+# 1. update version number above
+# 2. if using a branch, push to branch, merge with master. Master is current version deployed.
+# 3. Navigate to repo, create a new release. Name it the version stated above. Tag version should be the same
+#       as the version name (i.e. vX.Y.Z).
+# 3. In terminal: python setup.py sdist
+# 4. In terminal: python twine dist/nwsapy-{version}.tar.gz
+# Details: https://medium.com/@joel.barmettler/how-to-upload-your-python-package-to-pypi-65edc5fe9c56
 
 setup(
   name = 'nwsapy',         # How you named your package folder (MyLib)
@@ -27,7 +36,8 @@ setup(
           'shapely',
           'pandas',
           'numpy',
-          'pint'
+          'pint',
+          'requests',
       ],
   python_requires = '>=3.8',
   classifiers=[

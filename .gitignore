@@ -7,6 +7,7 @@ venv/
 .idea/
 */.DS_Store
 tests/package_test.py
+nwsapy/stub.py
 
 # C extensions
 *.so

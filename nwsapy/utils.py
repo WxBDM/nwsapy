@@ -12,6 +12,10 @@ class ErrorObject:
         for k, v in response.items():  # the response text is going to allow us to see the response from the API
             setattr(self, k, v)
 
+    def __repr__(self):
+        msg = f"Error details:\nStatus: {self.status}\nDescription: {self.detail}\nCorrelation ID: {self.correlationId}"
+        return msg
+
 
 class ObjectIterator:
 

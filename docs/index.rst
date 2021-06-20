@@ -48,6 +48,7 @@ Table of Contents
    
    Getting Started <gettingstarted>
    API Reference <apiref>
+   Developer's Notes <dev_notes>
 
 Advantages of using NWSAPy
 ==========================

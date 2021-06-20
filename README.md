@@ -15,6 +15,14 @@ APy is designed to be simple and easy to use. For example, if we wanted to get a
 from nwsapy import nwsapy
 
 tor_warnings_in_ok = nwsapy.get_active_alerts(event = "Tornado Warning", area = "OK")
+
+# Check to make sure there aren't any request errors.
+# If so, let the user know by raising an error.
+if tor_warnings_in_ok.has_any_request_errors:
+    error_msg = f"Request error found. Number of errors: {tor_warnings_in_ok.n_errors}"
+    raise ConnectionError(error_msg)
+
+# iterate through all of the tornado warnings in Oklahoma and print the headline.
 for warning in tor_warnings_in_ok:
     print(warning.headline)
 ```
