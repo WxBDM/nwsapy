@@ -14,6 +14,8 @@ Specifically, this module holds classes for the following urls:
 You can find the API documentation here: https://www.weather.gov/documentation/services-web-api#/
 """
 import copy
+import warnings
+
 import shapely
 from shapely.geometry import Point
 from datetime import datetime
@@ -157,9 +159,6 @@ class IndividualAlert:
         time_d = self._set_times(times)
         alert_d.update(time_d)
 
-        # add a pandas series to it, why not?
-        alert_d['series'] = self._construct_series(alert_d)
-
         # fix the affected zones so it's only the zoneID.
         alert_d['affectedZones'] = [zone.split("/")[-1] for zone in alert_d['affectedZones']]
         alert_d['areaDesc'] = alert_d['areaDesc'].split(";")
@@ -167,14 +166,28 @@ class IndividualAlert:
         for k, v in alert_d.items():
             setattr(self, k, v)
 
+        self.series = pd.Series(alert_d)
+
     def _format_geometry(self, geometries):
         if not isinstance(geometries, type(None)):  # if there's any kind of geometry
+            geometry_type = geometries['type']
+
+            # First check to see if it's a multipolygon. If so, then we need to create polygons out of it.
+            if geometry_type == "MultiPolygon":
+                points = []
+                polygons = []
+                for polygon in geometries['coordinates']:
+                    polygon_points = [Point(x[0], x[0]) for x in polygon[0]]
+                    points.append(polygon_points)
+                    polygons.append(shapely.geometry.Polygon(polygon_points))
+
+                return dict({"points" : points, "polygon" : polygons})
+
             # determine the geometry kind. If it's a point, make a list of shapely point objects.
             points = [Point(x[0], x[1]) for x in geometries['coordinates'][0]]
             polygon_d = dict({'points': points})
 
             # If the geometry type is a polygon, make a polygon object as well. Otherwise set to none.
-            geometry_type = geometries['type']
             if geometry_type == 'Polygon':
                 polygon_d['polygon'] = shapely.geometry.Polygon(points)
             else:  # only if it's a point (just in case, this needs to be tested)
@@ -198,19 +211,19 @@ class IndividualAlert:
 
         return time_d
 
-    def _construct_series(self, alert_dictionary):
-
-        # convert from shapely object to lat/lon
-        series_d = copy.deepcopy(alert_dictionary)
-        if series_d['points'] is not None:
-            points = [(point.y, point.x) for point in list(series_d['points'])]  # shapely is backwards >:(
-            series_d['points'] = points
-
-        if series_d['polygon'] is not None:
-            series_d['polygon'] = list(series_d['polygon'].exterior.coords)
-
-        series = pd.Series(series_d)
-        return series
+    # def _construct_series(self, alert_dictionary):
+    #
+    #     # convert from shapely object to lat/lon
+    #     series_d = copy.deepcopy(alert_dictionary)
+    #     if series_d['points'] is not None:
+    #         points = [(point.y, point.x) for point_list in list(series_d['points']) for point in point_list]
+    #         series_d['points'] = points
+    #
+    #     if series_d['polygon'] is not None:
+    #         series_d['polygon'] = list(series_d['polygon'].exterior.coords)
+    #
+    #     series = pd.Series(series_d)
+    #     return series
 
     def to_dict(self):
         r"""Converts all of the attributes to a dictionary.
@@ -515,6 +528,8 @@ class AlertById(BaseAlert):
             self.alerts.append(IndividualAlert(info))
             self.response_headers.append(response.headers)
 
+        self._iterable = self.alerts # make the object iterable.
+
     def _validate(self, alert_id):
         # Validate the input data and provide ParameterTypeError.
 
@@ -685,7 +700,7 @@ class AlertByCount:
         if not isinstance(self.total, AlertError):
             return self.total
 
-        return f"Error object, code: {self.total.status}"
+        return self.total.__repr__()
 
     def __init__(self, user_agent):
         response = utils.request("https://api.weather.gov/alerts/active/count", headers=user_agent)

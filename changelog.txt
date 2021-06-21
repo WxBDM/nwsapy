@@ -2,6 +2,15 @@ This document describes the changelog for all the different versions.
 
 Last updated: 6/16/21
 
+v0.2.2 (release: TBD)
+- BUG: API had MultiPolygon for alerts.
+    - APy handles this by giving a list for polygons, and a nested list for points.
+- BUG: Series data types are correct now, there's no reformatting as in previous versions.
+- BUG: get_alert_by_id wasn't iterable. This has been fixed.
+
+v0.2.1 (release: June 20, 2021)
+- BUG: requests wasn't a dependency. This has been added and a fresh install can be made in venv.
+
 v0.2.0 (release: June 16, 2021)
 - The following endpoint groups (with nwsapy methods) have been implemented:
     - points
