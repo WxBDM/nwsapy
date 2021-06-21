@@ -1,6 +1,11 @@
 This document describes the changelog for all the different versions.
 
-Last updated: 6/16/21
+Last updated: 6/20/21
+
+v0.2.1 (release: June 20, 2021)
+- Requests wasn't added as a dependency for the package, and in a fresh install this caused errors.
+- Updated README to better align with the current version.
+- Added dev notes.
 
 v0.2.0 (release: June 16, 2021)
 - The following endpoint groups (with nwsapy methods) have been implemented:

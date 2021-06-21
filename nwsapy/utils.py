@@ -13,7 +13,8 @@ class ErrorObject:
             setattr(self, k, v)
 
     def __repr__(self):
-        msg = f"Error details:\nStatus: {self.status}\nDescription: {self.detail}\nCorrelation ID: {self.correlationId}"
+        msg = f"Error details:\nStatus: {self.status}\nDescription: {self.detail}\nCorrelation ID: {self.correlationId}" \
+              f"Instance: {self.instance}\nType: {self.type}"
         return msg
 
 

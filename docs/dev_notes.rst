@@ -35,3 +35,25 @@ Some driver code pairing it against a database (without associated methods writt
         forecast = nwsapy.get_gridpoint(point.cwa, (point.gridX, point.gridY))
 
 You can also do the same thing with an in-memory cache.
+
+Benchmark Testing: Alerts
+-------------------------
+I've performed some benchmark tests to see what would be the most optimal for alerts. This specific benchmark test occurred on Sunday, June 2021. During the benchmark test, the NWS watches, warnings, and advisory map was as such:
+
+.. image:: docs/_static/US.png
+
+Thus, any alerts in states such as Nebraska, SD, or ND would be skewed in terms of time, as there are minimal watches/warnings there.
+
+The benchmark was purely empirical. That is, a timer was used to determine the time it took to compare 3 alert methods: ``get_all_alerts()``, ``get_alert_by_area()``, and ``get_active_alerts()``.
+
+.. code-block:: python
+
+                 all     active       area
+    count  10.000000  10.000000  10.000000
+    mean    2.122451   1.440446   1.284262
+    std     1.202978   0.709636   0.764525
+    min     0.747752   0.580143   0.523200
+    25%     1.148271   0.915316   0.770044
+    50%     1.678807   1.267500   1.113227
+    75%     3.010713   1.929299   1.588442
+    max     3.915961   2.834346   3.087599
