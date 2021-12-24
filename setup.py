@@ -1,6 +1,6 @@
 
 import pathlib
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -8,25 +8,26 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-version = "0.2.2"
+version = "0.2.3"
 
 setup(
   name = 'nwsapy',         # How you named your package folder (MyLib)
-  packages = ['nwsapy'],   # Chose the same as "name"
+  packages = find_packages(),   # Chose the same as "name"
   long_description=README,
   long_description_content_type="text/markdown",
   version = version,      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
-  description = 'A package to help with NWS API requests',   # Give a short description about your library
+  description = 'A pythonic implementation of the National Weather Service API',   # Give a short description about your library
   author = 'Brandon Molyneaux',                   # Type in your name
   url = 'https://github.com/WxBDM/nwsapy',   # Provide either the link to your github or to your website
   download_url = f'https://github.com/WxBDM/nwsapy/archive/refs/tags/v{version}.tar.gz',    # I explain this later on
   keywords = ['national weather service', 'nws', 'nws api'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
-          'shapely',
-          'pandas',
-          'numpy',
-          'pint'
+          'shapely==1.7.1',
+          'pandas==1.2.4',
+          'numpy==1.20.3',
+          'pint==0.17',
+          'requests==2.25.1'
       ],
   python_requires = '>=3.8',
   classifiers=[
@@ -35,8 +36,7 @@ setup(
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: MIT License',   # Again, pick a license
     'Programming Language :: Python :: 3',      # Specify which python versions that you want to support
-    'Programming Language :: Python :: 3.4',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
   ],
 )
