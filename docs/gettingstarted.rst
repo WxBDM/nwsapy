@@ -19,7 +19,13 @@ Once it's installed, go ahead and test it with this small script:
 	
 	nwsapy.set_user_agent("Application Name", "youremail@domain.com")
 	server_ping = nwsapy.ping_server()
-	print(server_ping.status)
+
+	# Always a good idea to check to make sure an error didn't occur.
+	# There are times when a 400 or 500 error will occur.
+	if server_ping.has_any_request_errors:
+	    print(f"Error from server. Details: {server_ping}")
+	else:
+        print(server_ping.status)  # will print OK
 
 This should give you::
 

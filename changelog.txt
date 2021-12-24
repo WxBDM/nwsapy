@@ -1,6 +1,6 @@
 This document describes the changelog for all the different versions.
 
-Last updated: 6/16/21
+Last updated: 6/21/21
 
 v0.2.2 (release: TBD)
 - BUG: API had MultiPolygon for alerts.
