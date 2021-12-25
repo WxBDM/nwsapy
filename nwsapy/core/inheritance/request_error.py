@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 # The docs on this look weird, fix.
-class BaseBadRequest:
+class RequestError:
     """An object to be used when the request is bad.\n
     Attributes:
     
@@ -33,7 +33,7 @@ class BaseBadRequest:
         for k, v in response.items(): # set each 
             setattr(self, k, v)
 
-        self._d = response
+        self.values = response
 
     def to_dict(self):
         """Returns a dictionary of the associated error object.
@@ -41,62 +41,14 @@ class BaseBadRequest:
         :return: dictionary containing response details.
         :rtype: dictionary
         """
-        return self._d
+        return self.values
 
-    def to_dataframe(self):
+    def to_df(self):
         """Formats the error object response in a Pandas dataframe, with
         columns are the attributes.
 
         :return: Dataframe
         :rtype: pd.DataFrame
         """
-        s = pd.Series(data = self._d)
+        s = pd.Series(data = self.values)
         return pd.DataFrame(s).transpose() # transpose it so columns are named the attributes.
-
-
-class AlertError(BaseBadRequest):
-    """An error object for the alerts endpoint.
-
-    :param response: The response object (json formatted).
-    :type response: request.Response
-    """
-    def __init__(self, response):
-        """Constructor for AlertError class.
-        """
-        super(AlertError, self).__init__(response)
-
-
-class GlossaryError(BaseBadRequest):
-    """An error object for the glossary endpoint.
-
-    :param response: The response object (json formatted).
-    :type response: request.Response
-    """
-    def __init__(self, response):
-        """Constructor for GlossaryError class.
-        """
-        super(GlossaryError, self).__init__(response)
-
-class GridpointsError(BaseBadRequest):
-    """An error object for the gridpoint endpoint.
-
-    :param response: The response object (json formatted).
-    :type response: request.Response
-    """
-    def __init__(self, response):
-        """Constructor for the GridPointsError class.
-        """
-        super(GridPointsError, self).__init__(response)
-
-
-class PointError(BaseBadRequest):
-    """An error object for the points endpoint.
-
-    :param response: The response object (json formatted).
-    :type response: request.Response
-    """
-    def __init__(self, response):
-        """Constructor for the PointError class.
-        """
-        super(PointError, self).__init__(response)
-

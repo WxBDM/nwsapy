@@ -14,12 +14,15 @@ from warnings import warn
 
 from .core.request import request_from_api
 
+from .endpoints.glossary import Glossary
+from .endpoints.point import Point
+
 class ServerPing:
     """Tests the server to make sure it's OK."""
 
     def __init__(self, user_agent):
         response = request_from_api("https://api.weather.gov/", headers=user_agent)
-        self.status = response.json()['status']
+        self.values = response.json()['status']
         self.response_headers = response.headers
         
 
@@ -31,8 +34,11 @@ class NWSAPy:
 
     def _check_user_agent(self):
         if self._user_agent is None:
-            warn(f"Be sure to set the user agent before calling any nwsapy functions. To prevent this message from "
-                  f"appearing again, use: nwsapy.set_user_agent(app_name, email/website)")
+            msg = "Be sure to set the user agent before calling any " \
+                "NWSAPy-related methods. To prevent this message from " \
+                "appearing again, call `set_user_agent` method and set " \
+                "your information."
+            warn(msg)
 
     def set_user_agent(self, app_name, contact):
         """Sets the User-Agent in header for requests. This should be unique to your application.
@@ -51,24 +57,19 @@ class NWSAPy:
             The contact email. This is needed for API authentication.
 
         """
-
-        # # check data types
-        # if not isinstance(app_name, str):
-        #     raise ParameterTypeError(app_name, str)
-        # if not isinstance(contact, str):
-        #     raise ParameterTypeError(contact, str)
-
         self._app = app_name
         self._contact = contact
         self._user_agent = f"({self._app}, {contact})"
         self._user_agent_to_d = dict({'User-Agent': self._user_agent})
-        
-    def ping_server(self):
-        """Pings https://api.weather.gov/ to see status
+    
+    def get_glossary(self):
+        self._check_user_agent()
+        return Glossary(self._user_agent_to_d)
 
-        Returns
-        -------
-        :class:`utils.ServerPing`
-        """
+    def get_point(self, lat, lon):
+        self._check_user_agent()
+        return Point(lat, lon, self._user_agent_to_d)
+    
+    def ping_server(self):
         self._check_user_agent()
         return ServerPing(self._user_agent_to_d)
