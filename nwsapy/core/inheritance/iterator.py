@@ -37,10 +37,16 @@ class BaseIterator:
                     "please open an issue on GitHub."
             raise ValueError(error_msg)
 
+    def __len__(self):
+        """Returns the length of the iterable object.
+        """
+        self._check_if_iterable_is_set()
+        return len(self._iterable)
+    
     def __iter__(self):
         """Allows for iteration though object.
         """
-        self._check_if_iterable_is_set()    
+        self._check_if_iterable_is_set()
         self._index = 0
         return self
 

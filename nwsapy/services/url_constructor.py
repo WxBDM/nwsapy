@@ -1,5 +1,6 @@
+
 from .validation import DataValidationChecker
-from .errors import DataValidationError
+from nwsapy.core.errors import DataValidationError
 import os
 
 def construct_active_alert_url(params):

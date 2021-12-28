@@ -1,8 +1,17 @@
 import requests
-from requests.exceptions import HTTPError
-
+from requests import HTTPError
 
 def request_from_api(url, headers):
+    """Requests data from the NWS API and returns a response.
+
+    :param url: The URL to request from.
+    :type url: str
+    :param headers: The headers to include in the response.
+    :type headers: dict
+    :raises Exception: If a bad request is made, raise an exception.
+    :return: A response from the NWS API.
+    :rtype: requests.Response
+    """
     # requests a url. For this purpose, this should be a NWS API url.
     # list of URLs: https://www.weather.gov/documentation/services-web-api#/
 

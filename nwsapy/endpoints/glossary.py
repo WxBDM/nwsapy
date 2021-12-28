@@ -5,30 +5,27 @@ from nwsapy.core.inheritance.base_endpoint import BaseEndpoint
 
 class Glossary(BaseEndpoint):
     
-    # Copy/Paste these values for each base method that is a "passthrough".
-    _to_df_implement = True
-    _to_pint_implement = False
-    _to_dict_implement = True
-    
-    def __init__(self, user_agent):
+    def __init__(self):
         
         # initialize the BaseEndpoint __init__ class.
-        super(BaseEndpoint, self).__init__()
+        super(Glossary, self).__init__()
         
-        # make the request to the API.
-        response = self._request_api("https://api.weather.gov/glossary",
-                                    user_agent)
+        # TODO: delete once testing has been done.
         
-        # handle the response appropriately specific to this class.
-        if self.has_any_request_errors:
-            self.values = RequestError(response)
-        else:
-            self.values = {}
-            for element in response.json()['glossary']:
-                self.values[element['term']] = element['definition'] 
+        # # make the request to the API.
+        # response = self._request_api("https://api.weather.gov/glossary",
+        #                             user_agent)
         
-        # set the iterable
-        self._set_iterator(self.values)
+        # # handle the response appropriately specific to this class.
+        # if self.has_any_request_errors:
+        #     self.values = RequestError(response)
+        # else:
+        #     self.values = {}
+        #     for element in response.json()['glossary']:
+        #         self.values[element['term']] = element['definition'] 
+        
+        # # set the iterable
+        # self._set_iterator(self.values)
     
     def to_dict(self):
         """Returns a dictionary

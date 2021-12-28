@@ -2,7 +2,7 @@ from warnings import warn
 import pytest
 
 from nwsapy.core.inheritance.iterator import BaseIterator
-from nwsapy.core.request import request_from_api
+from nwsapy.services.request import request_from_api
 
 # Every endpoint class will inherit this, it's inevitable. It's necessary to
 #   create an abstract base endpoint class with a built-in iterator
@@ -28,80 +28,28 @@ from nwsapy.core.request import request_from_api
 
 class BaseEndpoint(BaseIterator):
     
-    # These aren't used for integrity checks, they're used in the base class.
     has_any_request_errors = False
-    _DEPRECIATED = False
-    
-    # These are required variables, as they'll be checked using pytest.
-    values = None
-    _iterable = None    
-    
-    # These methods are implemented or not. it's a dev integreity check.
-    _to_df_implement = None
-    _to_pint_implement = None
-    _to_dict_implement = None
     
     def __init__(self):
-        
-        if self._DEPRECIATED:
-            msg = "This endpoint is depreciated. Please see the API specification"
-            warn(msg)
-        
-    def _request_api(self, url, user_agent):
-        
-        # every endpoint requires a URL request.
-        response = request_from_api(url, headers = user_agent)
-        
-        # check if it's an OK response. If not, set boolean to True.
-        if not response.ok:
-            self.has_any_request_errors = True
-        
-        # set the headers for every endpoint.
-        self.response_headers = response.headers
-        
-        # It's going to be up to the dev to figure out how to organize and
-        #   handle the response, so just return it.
-        return response
+        super().__init__()
+    
+    # have to have this, can't access _set_iterator directly for some odd reason.
+    def _set_iterator_for_inherited_iterator(self):
+        self._set_iterator(self.values)
 
     # The following methods are pass-through methods. They'll get
     # "overwritten" (so to say) when they're defined in the child class.
     def to_df(self):
         """Converts to a dataframe.
         """
-        if not self._to_df_implement:
-            msg = f"{__name__}.to_df() is not implemented. Nothing will be returned."
-            warn(msg)
-            return
+        pass
 
     def to_pint(self):
         """Converts all units to pint.
         """
-        if not self._to_df_implement:
-            msg = f"{__name__}.to_pint() is not implemented. Nothing will be returned."
-            warn(msg)
-            return
+        pass
     
     def to_dict(self):
         """Converts values to dictionaries.
         """
-        if not self._to_df_implement:
-            msg = f"{__name__}.to_dict() is not implemented. Nothing will be returned."
-            warn(msg)
-            return
-
-    def _test_vals_have_been_set(self):
-        """Test method to ensure that each endpoint has the necessary attributes.
-        
-        If you are using this for not NWSAPy development... please don't :^)
-        
-        """
-        assert self.values == None
-        assert self._iterable == None
-    
-    def _test_methods_have_been_set(self):
-        """Test method to ensure that developers have set variables for 
-        the implementation of the methods (to_xyz).
-        """
-        assert self._to_df_implement == None
-        assert self._to_pint_implement == None
-        assert self._to_dict_implement == None
+        pass

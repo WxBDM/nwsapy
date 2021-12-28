@@ -2,9 +2,9 @@
 is for the user to call to interact with the Weather Service API.
 
 There are some methods that take ``**kwargs`` as a parameter. For those not
-familiar with this, this is short for "key word arguments", for example::
+familiar with this, this is short for "keyword arguments", for example::
 
-    api_connector.get_all_alerts(event = "Severe Thunderstorm")
+    api_connector.get_all_alerts(event = "Severe Thunderstorm", )
                                  ^^^^^
 
 This parameter is read in as ``{'event' : 'Severe Thunderstorm'}``, and is used
@@ -20,9 +20,13 @@ as "parameters" in this documentation in the respective method.
 
 # needed: https://api.weather.gov/openapi.json
 
+import requests
 from warnings import warn
+from requests import HTTPError
 
-from .core.request import request_from_api
+from .services.request import request_from_api
+
+import nwsapy.services.set_data as set_data
 
 from .endpoints.glossary import Glossary
 from .endpoints.point import Point
@@ -77,13 +81,30 @@ class NWSAPy:
         self._user_agent_to_d = dict({'User-Agent': self._user_agent})
     
     def get_glossary(self):
-        """Makes a request to the `/glossary` endpoint in the API.
+        """Makes a request to the `/glossary` endpoint in the API and returns
+        a glossary object containing information about the terms listed in
+        the glossary.
 
         :return: An object containing information from the `/glossary` endpoint.
         :rtype: nwsapy.endpoints.glossary.Glossary
         """
+        # check to make sure that the user agent is set.
         self._check_user_agent()
-        return Glossary(self._user_agent_to_d)
+        
+        # validate the parameters against DVT.
+        # in this case, there aren't any params, so skip.
+
+        # construct the URL (this case, hardcode it; it's static.)
+        url = 'https://api.weather.gov/glossary'
+        
+        # make the request
+        response = request_from_api(url, self._user_agent_to_d)
+        
+        # Set the data, return the nwsapy.endpoint.Glossary object.
+        glossary = set_data.for_glossary(response)
+      
+        # return it.
+        return glossary
 
     def get_point(self, lat, lon):
         """Makes a request to the `/point` endpoint in the API.

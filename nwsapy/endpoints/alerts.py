@@ -14,8 +14,8 @@ import numpy as np
 from nwsapy.core.inheritance.request_error import RequestError
 from nwsapy.core.inheritance.base_endpoint import BaseEndpoint
 from nwsapy.core.errors import KwargValidationError
-from nwsapy.core.validation import DataValidationChecker
-from nwsapy.core.url_constructor import construct_active_alert_url as construct_url
+from nwsapy.services.validation import DataValidationChecker
+from nwsapy.services.url_constructor import construct_active_alert_url as construct_url
 
 class IndividualAlert:
     def __init__(self, alert_list):

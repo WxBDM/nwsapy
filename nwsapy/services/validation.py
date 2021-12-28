@@ -6,8 +6,9 @@ Generally, users _shouldn't_ be accessing the functionality listed in here if
 they are using the package as intended. However, if the users wish to utilize
 this, then they should import the DataValidationChecker class.
 """
-from .mapping import full_state_to_two_letter_abbreviation as fsabbr
-from .errors import DataValidationError
+
+from nwsapy.core.errors import DataValidationError
+from nwsapy.core.mapping import full_state_to_two_letter_abbreviation as fsabbr
 
 class DataValidationChecker:
     """Class to encapsulate all data validation checking against API-related
@@ -61,8 +62,8 @@ class DataValidationChecker:
                 if not is_valid:
                     raise DataValidationError(value, f"Parameter: `{key}`")
 
-    
-    def is_valid_area(self, area):
+    @staticmethod
+    def is_valid_area(area):
         """Checks against all valid areas that the API offers.
         
         See the Data Validation Table section of the documentation for
