@@ -1,7 +1,264 @@
-"""File to validate the data coming into NWSAPy.
+"""This contains all of the data validation checking and data used to check
+for valid data going into the API. This is generally a step between when the
+user interfaces with the entrypoint and before the request is made.
+
+Generally, users _shouldn't_ be accessing the functionality listed in here if
+they are using the package as intended. However, if the users wish to utilize
+this, then they should import the DataValidationChecker class.
 """
+from .mapping import full_state_to_two_letter_abbreviation as fsabbr
+from .errors import DataValidationError
+
+class DataValidationChecker:
+    """Class to encapsulate all data validation checking against API-related
+    data inputs.
+    """
+    
+    # This class can get cleaned up - there's extra steps the logic is taking,
+    # and it would be a good challenge for whoever wants to do it. Primarily,
+    # it would focus on eliminating those "extra steps". Right now,
+    # params are read in, they're mapped based off of the parameter name,
+    # and then the associated function is run, returns either True or False,
+    # and if it's false, then it will raise an error.
+    
+    def check_parameters(self, params):
+        """Used as the "entrypoint" to checking each parameter against the
+        data validation tables.
+
+        :param params: Keyword arugments from instantiation of object.
+        :type params: dictionary
+        :raises DataValidationError:
+        """
+        url_valid_mapper = {
+            'area' : self.is_valid_area,
+            'certainty' : self.is_valid_certainty,
+            'event' : self.is_valid_product,
+            'message_type' : self.is_valid_message_type,
+            'region' : self.is_valid_region,
+            'region_type' : self.is_valid_region_type,
+            'severity' : self.is_valid_severity,
+            'status' : self.is_valid_status,
+            'urgency' : self.is_valid_urgency
+        }
+        
+        # iterate through the parameters and check to ensure that the
+        # values are values.
+        for key, value in params.items():
+            if key not in url_valid_mapper:
+                continue # TODO: look into other ways to handle this.
+            
+            # equivalent to: is_valid = self.is_valid_xyz(value)
+            
+            # Sometimes, it'll be read in as a list. Other times, it won't.
+            # So, convert it into a list if it's not and then iterate through
+            # it :)
+            if not any([isinstance(value, list), isinstance(value, tuple)]):
+                value = [value]
+            
+            for val in value:    
+                is_valid = url_valid_mapper[key](val)
+            
+                if not is_valid:
+                    raise DataValidationError(value, f"Parameter: `{key}`")
+
+    
+    def is_valid_area(self, area):
+        """Checks against all valid areas that the API offers.
+        
+        See the Data Validation Table section of the documentation for
+        a full and complete list of valid entries.
+
+        :param area: The 2 state abbreviation or full name of state.
+        :type area: str
+        :return: True if it's a valid area, false otherwise
+        :rtype: bool
+        """
+        # Note that fsabbr handles .title() functionality.
+        if len(area) != 2: # is not a 2 letter abbreviation, make it a 2 letter.
+            area = fsabbr(area)
+        
+        if area in valid_areas():
+            return True
+        
+        return False
+    
+    @staticmethod
+    def is_valid_product(product):
+        """Checks to ensure that the product is a valid product.
+        
+        .. note::
+            The capitalization and spelling _must_ be the same. Under the hood,
+            it's a string comparison, and it doesn't take into account spelling
+            errors.
+            
+        See the Data Validation Table section of the documentation for
+        a full and complete list of valid entries.
+        
+        :param product: The desired NWS product.
+        :type product: str
+        :return: True if it's valid, False otherwise.
+        :rtype: bool
+        """
+        if product in valid_products():
+            return True
+        
+        return False
+
+    @staticmethod
+    def is_valid_certainty(certainty):
+        """Checks to ensure that the ceratinty is a valid certainty.
+
+        See the Data Validation Table section of the documentation for
+        a full and complete list of valid entries.
+
+        :param certainty: The certainty level to check.
+        :type certainty: str
+        :return: True if it's valid, False otherwise.
+        :rtype: bool
+        """
+        if certainty in valid_certainties():
+            return True
+        
+        return False
+    
+    @staticmethod
+    def is_valid_message_type(message_type):
+        """Checks to ensure that the message type is a valid message type.
+
+        See the Data Validation Table section of the documentation for
+        a full and complete list of valid entries.
+
+        :param certainty: The certainty level to check.
+        :type certainty: str
+        :return: True if it's valid, False otherwise.
+        :rtype: bool
+        """
+        if message_type in valid_message_types():
+            return True
+        
+        return False
+
+    @staticmethod
+    def is_valid_region(region):
+        # TODO: Add in docstring similar to above.
+        if region in valid_regions():
+            return True
+        return False
+    
+    @staticmethod
+    def is_valid_region_type(region_type):
+        # TODO: Add in docstring similar to above.
+        if region_type in valid_region_types():
+            return True
+        return False
+    
+    @staticmethod 
+    def is_valid_severity(severity):
+        # TODO: Add in docstring similar to above.
+        if severity in valid_severity():
+            return True
+        return False
+    
+    @staticmethod
+    def is_valid_status(status):
+        # TODO: Add in docstring similar to above.
+        if status in valid_status():
+            return True
+        return False
+    
+    @staticmethod
+    def is_valid_urgency(urgency):
+        # TODO: Add in docstring similar to above.
+        if urgency in valid_urgency():
+            return True
+        return False
+
+# these functions aren't built into the above class for a few reasons:
+#   1. Maybe the users want to breach outside of the entrypoint and use
+#       these for whatever reason.
+#   2. It doesn't make sense to instantiate new objects with these
+#       every time NWSAPy constructs a URL.
+
+def valid_certainties():
+    """Returns a list of valid certainties
+
+    :return: A list of valid certainties, all lowercase.
+    :rtype: list[str]
+    """
+    return ['observed', 'likely', 'possible', 'unlikely', 'unknown']
+
+def valid_message_types():
+    """Returns a list of valid message types.
+
+    :return: A list of valid message types, all lowercase.
+    :rtype: list[str]
+    """
+    return ['alert', 'update', 'cancel']
+
+def valid_regions():
+    """Returns a list of valid 2 letter uppercase regions.
+
+    :return: A list of 2 letter uppercase regions.
+    :rtype: list
+    """
+    return ['AL', 'AT', 'GM', 'GL', 'PA', 'PI']
+
+def valid_region_types():
+    """Returns a list of valid region types (land or marine), all lowercase.
+
+    :return: A list of valid region types.
+    :rtype: list[str]
+    """
+    return ['marine', 'land']
+
+def valid_severity():
+    """Returns a list of valid severity levels, all lowercase.
+
+    :return: A list of valid severity levels.
+    :rtype: list[str]
+    """
+    return ["extreme", "severe", "moderate", "minor", "unknown"]
+
+def valid_status():
+    """Returns a list of valid status levels, all lowercase.
+
+    :return: A list of status levels.
+    :rtype: list[str]
+    """
+    return ["actual", "exercise", "system", "test", "draft"]
+
+def valid_urgency():
+    """Returns a list of valid urgency levels, all lowercase.
+
+    :return: A list of valid urgency levels.
+    :rtype: list[str]
+    """
+    return ["immediate", "expected", "future", "past", "unknown"]
+
+def valid_areas():
+    """Returns a list of valid 2 letter state abbreviations.
+
+    :return: A list of valid areas, all upper case 2 letter abbreviations.
+    :rtype: list[str]
+    """
+    return ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 
+            'GA', 'GU', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 
+            'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+            'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC',
+            'SD', 'TN', 'TX', 'UT', 'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY',
+            'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS', 'LM', 'LH',
+            'LC', 'LE', 'LO'
+            ]
 
 def valid_products():
+    """Returns a list of all valid NWS products.
+    
+    .. note::
+        If checking for a valid product,
+
+    :return: A list of valid NWS products.
+    :rtype: list[str]
+    """
     return ['911 Telephone Outage Emergency', 'Administrative Message',
             'Air Quality Alert', 'Air Stagnation Advisory',
             'Arroyo And Small Stream Flood Advisory', 'Ashfall Advisory',
@@ -53,15 +310,4 @@ def valid_products():
             'Wind Advisory', 'Wind Chill Advisory', 'Wind Chill Warning',
             'Wind Chill Watch', 'Winter Storm Warning', 'Winter Storm Watch', 
             'Winter Weather Advisory'
-            ]
-
-
-def valid_areas():
-    return ['AL', 'AK', 'AS', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 
-            'GA', 'GU', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 
-            'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-            'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC',
-            'SD', 'TN', 'TX', 'UT', 'VT', 'VI', 'VA', 'WA', 'WV', 'WI', 'WY',
-            'PZ', 'PK', 'PH', 'PS', 'PM', 'AN', 'AM', 'GM', 'LS', 'LM', 'LH',
-            'LC', 'LE', 'LO'
             ]

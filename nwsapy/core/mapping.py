@@ -1,6 +1,8 @@
 """This file is intended to be a mapping to some of the more common
-meteorological/geography things."""
+meteorological/geography things. There are some functions
+that are used for other parts of NWSAPy."""
 
+from .errors import DataValidationError
 
 def state_abbreviation_to_full_name(abbr):
     """Converts a 2 letter state abbreviation to the respective full name.
@@ -13,7 +15,7 @@ def state_abbreviation_to_full_name(abbr):
     abbr_upper = abbr.upper() # transform it to uppercase
     if abbr not in abbr_state:
         e_msg = f'{abbr} not found in 2 letter abbreviation of states.'
-        raise ValueError(e_msg)
+        raise DataValidationError(e_msg)
 
     return abbr_state[abbr_upper]
 
@@ -30,7 +32,7 @@ def full_state_to_two_letter_abbreviation(full_state_name):
     if full_title not in full_state:
         e_msg = f'{full_state_name} not found in state names. Ensure spelling '\
             'is correct.'
-        raise ValueError(e_msg)
+        raise DataValidationError(e_msg)
 
     return full_state[full_title]
 
@@ -48,7 +50,7 @@ def get_hex_for_alert(alert):
     if alert_fixed not in colors:
         e_msg = f'{alert} not a valid alert. Check spelling. See documentation '\
             'for valid alerts.'
-        raise ValueError(e_msg)
+        raise DataValidationError(e_msg)
 
     # all good, return it.
     return f"#{colors[alert_fixed]['hex']}"
@@ -66,7 +68,7 @@ def get_rgb_for_alert(alert):
     if alert_fixed not in colors:
         e_msg = f'{alert} not a valid alert. Check spelling. See documentation '\
             'for valid alerts.'
-        raise ValueError(e_msg)
+        raise DataValidationError(e_msg)
 
     # all good, return it.
     return colors[alert]['rgb']

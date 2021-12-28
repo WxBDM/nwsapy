@@ -25,7 +25,7 @@ class Glossary(BaseEndpoint):
         else:
             self.values = {}
             for element in response.json()['glossary']:
-                self.values[element['term']] = element['definition']
+                self.values[element['term']] = element['definition'] 
         
         # set the iterable
         self._set_iterator(self.values)
