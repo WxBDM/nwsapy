@@ -72,7 +72,13 @@ NWSAPy has minimal dependencies, with core functionality being pure python:
 Contact
 =======
 
-It motivates me to continue support and development for this package if I hear from the community. If you have questions or comments relating to the package, you can tweet at me: @WxBDM. If a bug is identified, open an issue on GitHub. Please provide steps on how to recreate the issue with an example. If you'd like to contribute, please issue a pull request.
+It motivates me to continue support and development for this 
+package if I hear from the community. If you have questions or 
+comments relating to the package, you can tweet at me: @WxBDM. 
+You can also send me an email at brand.molyn@gmail.com.
+If a bug is identified, open an issue on GitHub. Please provide 
+steps on how to recreate the issue with an example. If you'd like to 
+contribute, please issue a pull request.
 
 Important Links
 ===============

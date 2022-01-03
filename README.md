@@ -11,8 +11,6 @@ There's a few advantages to using this package:
 
 As a visual example, the left side of the image below is a typical JSON response from the API. NWSAPy takes this and converts it into an object, as shown on the right. There are also built-in methods to help with filtering, counting, and even converting the information into a dataframe.
 
-![This is a test](./docs/_static/json_to_obj.png)
-
 ## Documentation
 
 Documentation for NWSAPy be found [here](https://nwsapy.readthedocs.io/en/latest/index.html)
