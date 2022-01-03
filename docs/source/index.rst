@@ -47,13 +47,8 @@ Table of Contents
    :maxdepth: 1
    
    Getting Started <gettingstarted>
-<<<<<<< HEAD:docs/index.rst
-   API Reference <apiref>
-   Developer's Notes <dev_notes>
-=======
    Using NWSAPy <using_nwsapy/intro>
    Data Validation Tables <dvt>
->>>>>>> rewrite:docs/source/index.rst
 
 Advantages of using NWSAPy
 ==========================
