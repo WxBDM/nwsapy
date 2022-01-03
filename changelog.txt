@@ -1,11 +1,34 @@
-This document describes the changelog for all the different versions.
+Last updated: 6/21/21
 
-Last updated: 6/20/21
+v1.0.0 (release: Jan 2, 2022)
+The entire application on the back-end was re-written to be more structured.
+The reasons are as follows:
+- Easier integration and module test writing.
+- Easier to identify bugs due to the package's modularity.
+- Users can extract specific functionality in the package for other projects.
+- Quicker development and implementation of new/depreciated NWS API endpoints.
+
+The changes are as follows:
+- The license has been changed to Apache 2.0.
+- Documentation has been re-written to a readthedocs theme from numpy/google theme.
+- Project structure has been reorganized:
+    nwsapy/
+    ├── core/
+    ├── endpoints/
+    ├── services/
+    ├── entrypoint.py
+
+- Added `api_connector` to the initial import statement (i.e. from nwsapy import api_connector)
+- Removal of the following endpoint `get_*` methods due to depreciation/removal
+from NWS API:
+    - get_point_station
+- Removal of a keyword argument for ``get_all_alerts`` due to NWS API depreciation:
+    - active
+- Some functionality (such as a list for the parameter for the alert endpoint) 
+    is no longer available due to the migration to a new structure.
 
 v0.2.1 (release: June 20, 2021)
-- Requests wasn't added as a dependency for the package, and in a fresh install this caused errors.
-- Updated README to better align with the current version.
-- Added dev notes.
+- BUG: requests wasn't a dependency. This has been added and a fresh install can be made in venv.
 
 v0.2.0 (release: June 16, 2021)
 - The following endpoint groups (with nwsapy methods) have been implemented:

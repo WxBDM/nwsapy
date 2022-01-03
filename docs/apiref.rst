@@ -41,6 +41,7 @@ NWSAPy Methods
 --------------
 
 .. currentmodule:: nwsapy
+    
 .. autoclass:: nwsapy.NWSAPy
     :noindex:
     :members:

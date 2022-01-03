@@ -33,4 +33,4 @@ Documentation for NWSAPy be found [here](https://nwsapy.readthedocs.io/en/latest
 
 ## Contact/Support
 
-I want to hear from you. If you have any questions regarding the package usage, please [send me an email](mailto:brandonmolyneaux@tornadotalk.com). If you encounter an issue, please open an issue on GitHub.
+I want to hear from you. If you have any questions regarding the package usage, please [send me an email](mailto:bdmolyne@gmail.com). If you encounter an issue, please open an issue on GitHub.

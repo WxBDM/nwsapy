@@ -3,11 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+docs-old
+
+.DS_Store
 venv/
 .idea/
 */.DS_Store
 tests/package_test.py
+<<<<<<< HEAD
 nwsapy/stub.py
+=======
+.vscode
+>>>>>>> rewrite
 
 # C extensions
 *.so
