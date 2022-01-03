@@ -13,7 +13,14 @@ from nwsapy.core.mapping import full_state_to_two_letter_abbreviation as fsabbr
 class DataValidationChecker:
     """Class to encapsulate all data validation checking against API-related
     data inputs.
+    
+    This class should interface between the programmers and the DataValitationTable
+    class, as this class handles the error raising, whereas the DataValidationTable
+    class handles if a value is in the DVT or not.
     """
+    
+    def __init__(self):
+        self.dvt = DataValidationTable()
     
     # This class can get cleaned up - there's extra steps the logic is taking,
     # and it would be a good challenge for whoever wants to do it. Primarily,
@@ -22,25 +29,63 @@ class DataValidationChecker:
     # and then the associated function is run, returns either True or False,
     # and if it's false, then it will raise an error.
     
-    def check_parameters(self, params):
+    def check_lat_lon(self, lat, lon):
+        """Checks to ensure that the values are within valid lat/lon bounds.
+
+        :param lat: The latitude of the point.
+        :type lat: int/float
+        :param lon: The longitude of the point.
+        :type lon: int/float
+        :raises ValueError: Invalid data type for latitude or longitude.
+        :raises ValueError: Latitude or longitude is not in valid bounds.
+        """
+        mapper = {
+            'Latitude' : [lat, -90, 90],
+            'Longitude' : [lon, -180, 180]
+        }
+        
+        for name, data in mapper:
+            # unpack
+            val, min_val, max_val = data
+            
+            # check dtype
+            valid_dtype = any([isinstance(val, int), isinstance(val, float)])
+            if not valid_dtype:
+                msg = f"{val} is not valid data type. Expected: int/float, Got: {type(val)}"
+                raise ValueError(msg)
+            
+            # check to ensure the values are real coordinates.
+            if not min_val <= val <= max_val:
+                msg = f'{name} is not between {min_val} and {max_val}. Got: {val}'
+                raise ValueError(msg)
+
+    
+    def check_active_alerts_dvt(self, params, is_all_alerts = False):
         """Used as the "entrypoint" to checking each parameter against the
         data validation tables.
+        
+        Used in:
+            - ``get_alerts``
+            - ``get_active_alerts``
 
         :param params: Keyword arugments from instantiation of object.
         :type params: dictionary
         :raises DataValidationError:
         """
         url_valid_mapper = {
-            'area' : self.is_valid_area,
-            'certainty' : self.is_valid_certainty,
-            'event' : self.is_valid_product,
-            'message_type' : self.is_valid_message_type,
-            'region' : self.is_valid_region,
-            'region_type' : self.is_valid_region_type,
-            'severity' : self.is_valid_severity,
-            'status' : self.is_valid_status,
-            'urgency' : self.is_valid_urgency
+            'area' : self.dvt.is_valid_area,
+            'certainty' : self.dvt.is_valid_certainty,
+            'event' : self.dvt.is_valid_product,
+            'message_type' : self.dvt.is_valid_message_type,
+            'region' : self.dvt.is_valid_region,
+            'region_type' : self.dvt.is_valid_region_type,
+            'severity' : self.dvt.is_valid_severity,
+            'status' : self.dvt.is_valid_status,
+            'urgency' : self.dvt.is_valid_urgency
         }
+        
+        if is_all_alerts:
+            url_valid_mapper['limit'] = self.is_above_limit
         
         # iterate through the parameters and check to ensure that the
         # values are values.
@@ -61,6 +106,34 @@ class DataValidationChecker:
             
                 if not is_valid:
                     raise DataValidationError(value, f"Parameter: `{key}`")
+
+    def check_if_valid_area(self, area):
+        """Checks to see if it's a valid area.
+        
+        Used in:
+            - ``get_alert_by_area``
+        """
+        if not self.dvt.is_valid_area(area):
+            raise DataValidationError(area, f"Area: `{area}")
+    
+    def check_if_valid_marine_region(self, marine_region):
+        if not self.dvt.is_valid_region(marine_region):
+            raise DataValidationError(marine_region, f'Region: `{marine_region}`')
+
+
+class DataValidationTable:
+
+    @staticmethod
+    def is_above_limit(limit):
+        
+        if isinstance(limit, float):
+            limit = int(limit)
+        if not isinstance(limit, int):
+            raise TypeError(f'Limit not integer or float. Found: {type(limit)}')
+        
+        if limit > 500:
+            return True
+        return False
 
     @staticmethod
     def is_valid_area(area):
@@ -186,7 +259,7 @@ def valid_certainties():
     :return: A list of valid certainties, all lowercase.
     :rtype: list[str]
     """
-    return ['observed', 'likely', 'possible', 'unlikely', 'unknown']
+    return ['Observed', 'Likely', 'Possible', 'Unlikely', 'Unknown']
 
 def valid_message_types():
     """Returns a list of valid message types.
@@ -194,6 +267,7 @@ def valid_message_types():
     :return: A list of valid message types, all lowercase.
     :rtype: list[str]
     """
+    # NWS API requires this to be lowercase
     return ['alert', 'update', 'cancel']
 
 def valid_regions():
@@ -210,7 +284,7 @@ def valid_region_types():
     :return: A list of valid region types.
     :rtype: list[str]
     """
-    return ['marine', 'land']
+    return ['Marine', 'Land']
 
 def valid_severity():
     """Returns a list of valid severity levels, all lowercase.
@@ -218,7 +292,7 @@ def valid_severity():
     :return: A list of valid severity levels.
     :rtype: list[str]
     """
-    return ["extreme", "severe", "moderate", "minor", "unknown"]
+    return ["Extreme", "Severe", "Moderate", "Minor", "Unknown"]
 
 def valid_status():
     """Returns a list of valid status levels, all lowercase.
@@ -226,7 +300,7 @@ def valid_status():
     :return: A list of status levels.
     :rtype: list[str]
     """
-    return ["actual", "exercise", "system", "test", "draft"]
+    return ["Actual", "Exercise", "System", "Test", "Draft"]
 
 def valid_urgency():
     """Returns a list of valid urgency levels, all lowercase.
@@ -234,7 +308,7 @@ def valid_urgency():
     :return: A list of valid urgency levels.
     :rtype: list[str]
     """
-    return ["immediate", "expected", "future", "past", "unknown"]
+    return ["Immediate", "Expected", "Future", "Past", "Unknown"]
 
 def valid_areas():
     """Returns a list of valid 2 letter state abbreviations.

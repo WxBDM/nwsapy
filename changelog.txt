@@ -1,12 +1,31 @@
-This document describes the changelog for all the different versions.
-
 Last updated: 6/21/21
 
-v0.2.2 (release: TBD)
-- BUG: API had MultiPolygon for alerts.
-    - APy handles this by giving a list for polygons, and a nested list for points.
-- BUG: Series data types are correct now, there's no reformatting as in previous versions.
-- BUG: get_alert_by_id wasn't iterable. This has been fixed.
+v1.0.0 (release: Jan 2, 2022)
+The entire application on the back-end was re-written to be more structured.
+The reasons are as follows:
+- Easier integration and module test writing.
+- Easier to identify bugs due to the package's modularity.
+- Users can extract specific functionality in the package for other projects.
+- Quicker development and implementation of new/depreciated NWS API endpoints.
+
+The changes are as follows:
+- The license has been changed to Apache 2.0.
+- Documentation has been re-written to a readthedocs theme from numpy/google theme.
+- Project structure has been reorganized:
+    nwsapy/
+    ├── core/
+    ├── endpoints/
+    ├── services/
+    ├── entrypoint.py
+
+- Added `api_connector` to the initial import statement (i.e. from nwsapy import api_connector)
+- Removal of the following endpoint `get_*` methods due to depreciation/removal
+from NWS API:
+    - get_point_station
+- Removal of a keyword argument for ``get_all_alerts`` due to NWS API depreciation:
+    - active
+- Some functionality (such as a list for the parameter for the alert endpoint) 
+    is no longer available due to the migration to a new structure.
 
 v0.2.1 (release: June 20, 2021)
 - BUG: requests wasn't a dependency. This has been added and a fresh install can be made in venv.

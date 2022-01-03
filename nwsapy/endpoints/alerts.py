@@ -7,82 +7,50 @@
 import shapely
 from shapely.geometry import Point
 from datetime import datetime
+from collections import OrderedDict
+from warnings import warn
 import pandas as pd
 import pytz
 import numpy as np
 
-from nwsapy.core.inheritance.request_error import RequestError
 from nwsapy.core.inheritance.base_endpoint import BaseEndpoint
-from nwsapy.core.errors import KwargValidationError
-from nwsapy.services.validation import DataValidationChecker
-from nwsapy.services.url_constructor import construct_active_alert_url as construct_url
 
 class IndividualAlert:
     def __init__(self, alert_list):
         # These need to get updated, tjhey're not parameters - they're attributes.ß
         """Individual alert class, holds properties describing each individual 
-        alert.
+        alert. The attributes are as follows:
         
-        :param affectedZones: A list of affected zones by ID.
-        :type affectedZones: list[str]
-        :param areaDesc: A description of the area that the alert covers.
-        :type areaDesc: str
-        :param category: The category in which the alert falls under.
-        :type category: str
-        :param description: Describes the alert.
-        :type description: str
-        :param effective: When the alert is effective (local time)
-        :type effective: datetime.datetime
-        :param effective_utc: When the alert is effective (local time)
-        :type effective_utc: datetime.datetime
-        :param ends: When the alert ends (local time)
-        :type ends: datetime.datetime or None
-        :param ends_utc: When the alert ends (UTC time)
-        :type ends_utc: datetime.datetime or None
-        :param event: The event of which this alert is (used as the object type)
-        :type event: str
-        :param expires: When the alert ends (local time)
-        :type expires: datetime.datetime or None
-        :param expires_utc: When the alert ends (UTC time)
-        :type expires_utc: datetime.datetime or None
-        :param geocode: 
-        :type geocode: dict
-        :param headline: The headline of the alert.
-        :type headline: str
-        :param id: The associated ID of the alert.
-        :type id: str
-        :param instruction: The “call to action” of the alerrt.
-        :type instruction: str
-        :param messageType: What kind of message the alert is (update, warning, etc)
-        :type messageType: str
-        :param onset: When the alert was onset (local time).
-        :type onset: datetime.datetime
-        :param onset_utc: When the alert was onset (UTC time).
-        :type onset_utc: datetime.datetime
-        :param parameters: 
-        :type parameters: dict
-        :param points: Points where the alert lies (lat/lon)
-        :type points: list, containing shapely.Point or None
-        :param polygon: The polygon where the alert lies.
-        :type polygon: shapely.Polygon or None
-        :param references: 
-        :type references: list
-        :param sender: Who sent the alert.
-        :type sender: str
-        :param senderName: Which NWS office sent the alert.
-        :type senderName: str
-        :param sent: When the alert was sent (local time)
-        :type sent: datetime.datetime
-        :param sent_utc: When the alert was sent (UTC time)
-        :type sent_utc: datetime.datetime
-        :param series: A pandas series with all attributes of this object
-        :type series: pandas.Series
-        :param severity: The severity level of the alert.
-        :type severity: str
-        :param status: The status level of the alert.
-        :type status: str
-        :param urgency: The urgency level of the alert.
-        :type urgency: str
+        affectedZones: A list of affected zones by ID. Type: list[str]
+        areaDesc: A description of the area that the alert covers. Type: str
+        category: The category in which the alert falls under. Type: str
+        description: Describes the alert. Type: str
+        effective: When the alert is effective (local time). Type: datetime.datetime
+        effective_utc: When the alert is effective (local time). Type: datetime.datetime
+        ends: When the alert ends (local time). Type: datetime.datetime or None
+        ends_utc: When the alert ends (UTC time). Type: datetime.datetime or None
+        event: The event of which this alert is (used as the object type) Type: tr
+        expires: When the alert ends (local time). Type: datetime.datetime or None
+        expires_utc: When the alert ends (UTC time). Type: datetime.datetime or None
+        geocode: Unknown. Type: dict
+        headline: The headline of the alert. Type: str
+        id: The associated ID of the alert. Type: str
+        instruction: The “call to action” of the alert. Type: str
+        messageType: What kind of message the alert is (update, warning, etc). Type: str
+        onset: When the alert was onset (local time). Type: datetime.datetime
+        onset_utc: When the alert was onset (UTC time). Type: datetime.datetime
+        parameters: Unknown. Type: dict
+        points: Points where the alert lies (lat/lon). Type: list, containing shapely.Point or None
+        polygon: The polygon where the alert lies. Type: shapely.Polygon or None
+        references: Unknown. Type: list
+        sender: Who sent the alert. Type:str
+        senderName: Which NWS office sent the alert. Type: senderName: str
+        sent: When the alert was sent (local time). Type: datetime.datetime
+        sent_utc: When the alert was sent (UTC time). Type: datetime.datetime
+        series: A pandas series with all attributes of this object. Type: pandas.Series
+        severity: The severity level of the alert. Type: str
+        status: The status level of the alert. Type: str
+        urgency: The urgency level of the alert. Type: str
         """
         alert_d = alert_list['properties'] # prep to set all attributes
 
@@ -107,6 +75,8 @@ class IndividualAlert:
 
         # used for to_dict(). __dict__ doesn't get class variables.
         self._d = alert_d
+        
+        self._series = pd.Series(data = self._d)
 
     def _format_geometry(self, geometries):
         
@@ -266,27 +236,112 @@ class IndividualAlert:
         """
         return self.ends_utc < other.ends_utc
 
-
-class ActiveAlert(BaseEndpoint):
+class BaseAlert(BaseEndpoint):
     
-    # Copy/Paste these values for each base method that is a "passthrough".
-    _to_df_implement = False
-    _to_pint_implement = False
-    _to_dict_implement = False
-    
-    def __init__(self, user_agent, **kwargs):
+    def __init__(self):
         super(BaseEndpoint, self).__init__()
         
-        dvt = DataValidationChecker()
-        dvt.check_parameters(kwargs)
+    def to_dict(self):
+        """Returns the alerts in a dictionary format, where the keys are numbers
+        which map to an individual alert.
+
+        :return: Dictionary containing the values of the active alerts.
+        :rtype: dict
+        """
+        # in case it's an error (i.e. correlationid is in it)
+        if isinstance(self.values, dict):
+            return self.values
+
+        # otherwise, create a new dictionary to reformat it and make it look
+        # better.
+        d = {}
+        for index, alert in enumerate(self.values):
+            d[index + 1] = alert.to_dict()
         
-        url = construct_url(kwargs)
-        response = self._request_api(url, user_agent)
-        
-        if self.has_any_request_errors:
-            self.values = RequestError(response)
-        else:
-            self.values = 'CHANGE ME BECAUSE IT WILL VARY ACROSS ENDPOINTS'
-        
-        self._set_iterator(self.values)
+        return d
     
+    def to_df(self):
+        """Returns the values of the alerts in a pandas dataframe structure.
+
+        :return: Dataframe of the values of the alerts.
+        :rtype: pandas.DataFrame
+        """
+        # if it's an error
+        if isinstance(self.values, dict):
+            return pd.DataFrame(data = self.values)
+        
+        # Performance issue: appending to a dataframe. This isn't ideal, so 
+        # solution to this is found here:
+        #   https://stackoverflow.com/questions/27929472/improve-row-append-performance-on-pandas-dataframes
+        # ... it's a lot faster, wow.
+        
+        d = OrderedDict()
+        
+        # self.values index is arbitrary.
+        for index, individual_alert in enumerate(self.values):
+            d[index] = individual_alert._d
+        
+        df = pd.DataFrame.from_dict(d).transpose()
+        df = df.reindex(sorted(df.columns), axis = 1) # alphabetize columns.
+        df = df.fillna(value = np.nan)
+        return df
+
+class ActiveAlerts(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+
+class Alerts(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+
+class AlertById(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+
+class AlertByArea(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+        
+class AlertByZone(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+
+class AlertByMarineRegion(BaseAlert):
+    
+    def __init__(self):
+        super(BaseAlert, self).__init__()
+
+class AlertByType(BaseEndpoint):
+    
+    def __init__(self):
+        super(BaseEndpoint, self).__init__()
+
+class AlertCount(BaseEndpoint):
+    
+    def __init__(self):
+        super(BaseEndpoint, self).__init__()
+    
+    def to_dict(self):
+        return self.values
+
+    # The dataframe method could get pretty interesting. There's a few different
+    # ways that it could be implemented, but for the sake of v1.0.0, this
+    # method is left out.
+    
+    # Figure out what these methods do in the original package.
+    def filter_zones(self, zone):
+        warn("This method has not been implemented yet.")
+        return {}
+
+    def filter_land_areas(self, area):
+        warn("This method has not been implemented yet.")
+        return {}
+    
+    def filter_marine_regions(self, region):
+        warn("This method has not been implemented yet.")
+        return {}

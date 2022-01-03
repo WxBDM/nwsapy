@@ -1,12 +1,4 @@
-
-from .validation import DataValidationChecker
-from nwsapy.core.errors import DataValidationError
-import os
-
-def construct_active_alert_url(params):
-    
-    dvt = DataValidationChecker()
-    dvt.check_parameters(params)
+def construct_alert_url(params, is_active_alerts = True):
     
     # Weird logic going on here, but the values need to be iterable, so if
     #   it's just a string, it'll be put into a list.
@@ -15,8 +7,11 @@ def construct_active_alert_url(params):
     #   part? Currently, data validation happens as a single element in the list.
     
     # Note: the keys are guarenteed to be in the params dict.
-    
-    url = "https://api.weather.gov/alerts"
+    if is_active_alerts:
+        url = "https://api.weather.gov/alerts/active"
+    else:
+        url = "https://api.weather.gov/alerts"
+        
     url_appendage = []
     for key, value in params.items():
         # another method: just assume that it's a string. More risky this way

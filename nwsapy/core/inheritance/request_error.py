@@ -28,12 +28,12 @@ class RequestError:
         """Constructor to unpack json-formatted response and set them
         as attributes to this class.
         """
-        response = json.loads(response.text)
+        response_values, _ = response
         # the response text is going to allow us to see the response from the API
-        for k, v in response.items(): # set each 
+        for k, v in response_values.items(): # set each 
             setattr(self, k, v)
 
-        self.values = response
+        self._d = response
 
     def to_dict(self):
         """Returns a dictionary of the associated error object.
@@ -41,14 +41,14 @@ class RequestError:
         :return: dictionary containing response details.
         :rtype: dictionary
         """
-        return self.values
+        return self._d
 
-    def to_df(self):
+    def to_dataframe(self):
         """Formats the error object response in a Pandas dataframe, with
         columns are the attributes.
 
         :return: Dataframe
         :rtype: pd.DataFrame
         """
-        s = pd.Series(data = self.values)
+        s = pd.Series(data = self._d)
         return pd.DataFrame(s).transpose() # transpose it so columns are named the attributes.

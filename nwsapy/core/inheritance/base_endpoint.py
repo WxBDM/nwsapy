@@ -1,8 +1,6 @@
 from warnings import warn
-import pytest
 
 from nwsapy.core.inheritance.iterator import BaseIterator
-from nwsapy.services.request import request_from_api
 
 # Every endpoint class will inherit this, it's inevitable. It's necessary to
 #   create an abstract base endpoint class with a built-in iterator
@@ -33,23 +31,30 @@ class BaseEndpoint(BaseIterator):
     def __init__(self):
         super().__init__()
     
-    # have to have this, can't access _set_iterator directly for some odd reason.
+    # have to have this, can't access _set_iterator directly. This has to do 
+    # something with the heirarchy of how methods are read.
     def _set_iterator_for_inherited_iterator(self):
         self._set_iterator(self.values)
 
     # The following methods are pass-through methods. They'll get
     # "overwritten" (so to say) when they're defined in the child class.
     def to_df(self):
-        """Converts to a dataframe.
+        """**Not implemented for this endpoint.**
         """
-        pass
+        msg = "to_df is not implemented for this endpoint. Returning `None`."
+        warn(msg)
+        return None
 
     def to_pint(self):
-        """Converts all units to pint.
+        """**Not implemented for this endpoint.**
         """
-        pass
+        msg = "to_pint is not implemented for this endpoint. Returning `None`."
+        warn(msg)
+        return None
     
     def to_dict(self):
-        """Converts values to dictionaries.
+        """**Not implemented for this endpoint.**
         """
-        pass
+        msg = "to_dict is not implemented for this endpoint. Returning `None`."
+        warn(msg)
+        return None

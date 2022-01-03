@@ -1,7 +1,7 @@
 import requests
 from requests import HTTPError
 
-def request_from_api(url, headers):
+def request_from_api(url, headers, as_response_object = False):
     """Requests data from the NWS API and returns a response.
 
     :param url: The URL to request from.
@@ -21,8 +21,16 @@ def request_from_api(url, headers):
     except HTTPError:
         # Possible error message: requests.exceptions.HTTPError: 503 Server Error:
         #   Service Unavailable for url: https://api.weather.gov/alerts/active
-        return response
+        if as_response_object:
+            return response
+        
+        return (response.json(), response.headers)
     except Exception as err:
         raise Exception(f'Other error occurred: {err}')
 
-    return response
+    # Return this as a tuple with the headers and as a dictionary. This will
+    #   help with testing and end-to-end data flow.
+    if as_response_object:
+        return response
+    
+    return (response.json(), response.headers)

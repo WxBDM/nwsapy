@@ -2,12 +2,11 @@ import pandas as pd
 
 from nwsapy.core.inheritance.base_endpoint import BaseEndpoint
 
-class Glossary(BaseEndpoint):
-    
+class ServerPing(BaseEndpoint):
+    """Sends a ping to the server.
+    """
     def __init__(self):
-        
-        # initialize the BaseEndpoint __init__ class.
-        super(Glossary, self).__init__()
+        super(ServerPing, self).__init__()
     
     def to_dict(self):
         """Returns the glossary in a dictionary format.
