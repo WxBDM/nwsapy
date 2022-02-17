@@ -66,8 +66,10 @@ class IndividualAlert:
         alert_d.update(time_d)
 
         # fix the affected zones so it's only the zoneID.
-        alert_d['affectedZones'] = [zone.split("/")[-1] for zone in alert_d['affectedZones']]
-        alert_d['areaDesc'] = alert_d['areaDesc'].split(";")
+        alert_d['affected_zones'] = [zone.split("/")[-1] for zone in alert_d['affectedZones']]
+        alert_d['area_desc'] = alert_d['areaDesc'].split(";")
+        alert_d['message_type'] = alert_d['messageType']
+        alert_d['sender_name'] = alert_d['senderName']
 
         # set the attributes for the class.
         for k, v in alert_d.items():

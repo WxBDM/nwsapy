@@ -31,11 +31,6 @@ class BaseEndpoint(BaseIterator):
     def __init__(self):
         super().__init__()
     
-    # have to have this, can't access _set_iterator directly. This has to do 
-    # something with the heirarchy of how methods are read.
-    def _set_iterator_for_inherited_iterator(self):
-        self._set_iterator(self.values)
-
     # The following methods are pass-through methods. They'll get
     # "overwritten" (so to say) when they're defined in the child class.
     def to_df(self):

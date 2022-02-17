@@ -8,7 +8,7 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-version = "1.0.0"
+version = "1.0.1"
 
 setup(
   name = 'nwsapy',         # How you named your package folder (MyLib)
