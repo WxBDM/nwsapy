@@ -1,6 +1,6 @@
-Last updated: Jan 5, 2022
+Last updated: Feb 16, 2022
 
-v1.0.1 (release: Jan 8, 2022)
+v1.0.1 (release: Feb 16, 2022)
 - BUG: Fixed an issue where `point` endpoint wasn't working.
 - BUG: Fixed an issue where all alerts didn't have individual alerts.
 - Removed the __repr__ for the point endpoint, to be implmeented at a later time.
