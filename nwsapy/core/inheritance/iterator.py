@@ -13,11 +13,13 @@ class BaseIterator:
 
     _iterable = None
 
-    def _set_iterator(self, iterable):
+    def _set_iterator(self):
         """Sets the object to be iterated over.
         
         If it's a dictionary, it'll set the keys as the iterable object.
         """
+        
+        iterable = self.values
         
         if isinstance(iterable, dict):
             self._reference_to_dict = iterable

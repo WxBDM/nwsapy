@@ -84,7 +84,7 @@ class NWSAPy:
         :rtype: request.Response
         """
         self._check_user_agent()
-        response = request_from_api(url, self._user_agent_to_d,                 as_response_object = True)
+        response = request_from_api(url, self._user_agent_to_d, as_response_object = True)
     
         return response
     

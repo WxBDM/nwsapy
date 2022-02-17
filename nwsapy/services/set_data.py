@@ -21,6 +21,7 @@ def nws_api_gave_error(response):
     :return: True if it was a bad request, False otherwise.
     :rtype: bool
     """
+    # There should be a more robust way of testing this.
     if 'correlationId' in list(response.keys()):
         return True
     
@@ -48,7 +49,7 @@ def __template(response):
         pass # <-- Remove this
     
     # obj.response_headers = response_headers
-    # obj._set_iterator_for_inherited_iterator()
+    # obj._set_iterator()
     #
     # return obj
 
@@ -89,7 +90,7 @@ def for_server_ping(response):
     
     ping.values = response_values
     ping.response_headers = response_headers
-    ping._set_iterator_for_inherited_iterator()
+    ping._set_iterator()
     
     return ping
 
@@ -120,7 +121,7 @@ def for_glossary(response):
         glossary.values = values
         
     glossary.response_headers = response_headers
-    glossary._set_iterator_for_inherited_iterator()
+    glossary._set_iterator()
     
     return glossary
 
@@ -173,7 +174,7 @@ def for_point(response):
         point.values = values
 
     point.response_headers = response_headers
-    point._set_iterator_for_inherited_iterator()
+    point._set_iterator()
     
     return point
 
@@ -189,10 +190,10 @@ def for_alerts(response):
         alerts.values = response_values
         alerts.has_any_request_errors = True
     else:
-        alerts.values = []
+        alerts.values = [IndividualAlert(x) for x in response_values['features']]
     
     alerts.response_headers = response_headers
-    alerts._set_iterator_for_inherited_iterator()
+    alerts._set_iterator()
     return alerts
 
 def for_active_alerts(response):
@@ -210,7 +211,7 @@ def for_active_alerts(response):
         alerts.values = [IndividualAlert(x) for x in response_values['features']]
     
     alerts.response_headers = response_headers
-    alerts._set_iterator_for_inherited_iterator()
+    alerts._set_iterator()
     return alerts
 
 def for_alert_by_id(response):
@@ -227,7 +228,7 @@ def for_alert_by_id(response):
         alerts.values = [IndividualAlert(response_values)]
 
     alerts.response_headers = response_headers
-    alerts._set_iterator_for_inherited_iterator()
+    alerts._set_iterator()
     return alerts
 
 def for_alert_by_area(response):
@@ -246,7 +247,7 @@ def for_alert_by_area(response):
         alert.values = [IndividualAlert(x) for x in features]
 
     alert.response_headers = response_headers
-    alert._set_iterator_for_inherited_iterator()
+    alert._set_iterator()
     return alert
 
 def for_alert_count(response):
@@ -274,7 +275,7 @@ def for_alert_count(response):
         count.values = values
     
     count.response_headers = response_headers
-    count._set_iterator_for_inherited_iterator()
+    count._set_iterator()
     return count
 
 def for_alert_by_zone(response):
@@ -293,7 +294,7 @@ def for_alert_by_zone(response):
         alert.values = [IndividualAlert(x) for x in features]
     
     alert.response_headers = response_headers
-    alert._set_iterator_for_inherited_iterator()
+    alert._set_iterator()
     return alert
 
 def for_alert_by_marine_region(response):
@@ -312,7 +313,7 @@ def for_alert_by_marine_region(response):
         alert.values = [IndividualAlert(x) for x in features]
     
     alert.response_headers = response_headers
-    alert._set_iterator_for_inherited_iterator()
+    alert._set_iterator()
     return alert
 
 def for_alert_type(response):
@@ -330,5 +331,5 @@ def for_alert_type(response):
         alert.values = response_values['eventTypes']
     
     alert.response_headers = response_headers
-    alert._set_iterator_for_inherited_iterator()
+    alert._set_iterator()
     return alert

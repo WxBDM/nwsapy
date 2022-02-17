@@ -6,8 +6,6 @@ from nwsapy.core.inheritance.base_endpoint import BaseEndpoint
 
 class Point(BaseEndpoint):
     
-    def __repr__(self):
-        return f"Point object located at {self.lat}, {self.lon} ({self.city}, {self.state})"
 
     def __init__(self):
         super(Point, self).__init__()

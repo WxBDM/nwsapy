@@ -44,7 +44,10 @@ class DataValidationChecker:
             'Longitude' : [lon, -180, 180]
         }
         
-        for name, data in mapper:
+        print(type(mapper))
+        print(mapper['Latitude'])
+        
+        for name, data in mapper.items():
             # unpack
             val, min_val, max_val = data
             

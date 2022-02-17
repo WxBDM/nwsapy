@@ -10,11 +10,8 @@ venv/
 .idea/
 */.DS_Store
 tests/package_test.py
-<<<<<<< HEAD
-nwsapy/stub.py
-=======
 .vscode
->>>>>>> rewrite
+deployment_steps.txt
 
 # C extensions
 *.so
