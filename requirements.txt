@@ -4,6 +4,7 @@ Babel==2.9.1
 beautifulsoup4==4.9.3
 certifi==2020.12.5
 chardet==4.0.0
+click==8.0.3
 cycler==0.10.0
 docutils==0.16
 python-dotenv==0.19.2
@@ -16,7 +17,7 @@ lazy-object-proxy==1.7.1
 MarkupSafe==1.1.1
 matplotlib==3.4.2
 mccabe==0.6.1
-numpy==1.20.3
+numpy==1.22.2
 packaging==20.9
 pandas==1.2.4
 Pillow==9.0.0
@@ -27,9 +28,11 @@ Pygments==2.9.0
 pylint==2.12.2
 pyparsing==2.4.7
 python-dateutil==2.8.1
+python-dotenv==0.19.2
 pytest==6.2.5
 pytz==2021.1
 requests==2.25.1
+rich==11.2.0
 Shapely==1.7.1
 six==1.16.0
 snowballstemmer==2.1.0
