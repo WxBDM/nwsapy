@@ -20,7 +20,7 @@ mccabe==0.6.1
 numpy==1.22.2
 packaging==20.9
 pandas==1.2.4
-Pillow==9.0.0
+Pillow==9.0.1
 Pint==0.17
 platformdirs==2.4.0
 pydata-sphinx-theme==0.6.3
