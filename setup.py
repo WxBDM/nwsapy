@@ -1,7 +1,6 @@
 
 import pathlib
 from setuptools import setup, find_packages
-from dotenv import dotenv_values
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -9,9 +8,7 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-version = "1.0.1"
-
-env_vals = dotenv_values(".env")
+version = "1.0.2"
 
 setup(
   name = 'nwsapy',         # How you named your package folder (MyLib)
@@ -22,7 +19,7 @@ setup(
   license='apache-2.0',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'A pythonic implementation of the National Weather Service API',   # Give a short description about your library
   author = 'Brandon Molyneaux',                   # Type in your name
-  email = env_vals['PYTEST_CONTACT_INFO'],
+  email = 'bran.moly@gmail.com',
   url = 'https://github.com/WxBDM/nwsapy',   # Provide either the link to your github or to your website
   download_url = f'https://github.com/WxBDM/nwsapy/archive/refs/tags/v{version}.tar.gz',    # I explain this later on
   keywords = ['national weather service', 'nws', 'nws api'],   # Keywords that define your package best
